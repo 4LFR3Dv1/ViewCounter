@@ -139,11 +139,11 @@ function SignalBackdrop() {
 
 function FrameOverlay({ data }: { data: DashboardPayload & { secondsSinceUpdate: number } }) {
   return (
-    <div className="pointer-events-none fixed inset-3 z-40 hidden border border-white/10 lg:block">
-      <div className="absolute -left-px -top-px h-9 w-9 border-l border-t border-red-400" />
-      <div className="absolute -right-px -top-px h-9 w-9 border-r border-t border-white/45" />
-      <div className="absolute -bottom-px -left-px h-9 w-9 border-b border-l border-white/45" />
-      <div className="absolute -bottom-px -right-px h-9 w-9 border-b border-r border-red-400" />
+    <div className="pointer-events-none fixed inset-3 z-40 hidden lg:block">
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-red-400/60 via-white/12 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/12 to-red-400/60" />
+      <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-red-400/45 via-white/10 to-transparent" />
+      <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-white/10 to-red-400/45" />
       <div className="absolute left-4 top-3 text-[10px] uppercase text-white/35">JF portfolio</div>
       <div className="absolute right-4 top-3 text-[10px] uppercase text-white/35">atualizado {data.secondsSinceUpdate}s</div>
       <div className="absolute bottom-3 left-4 text-[10px] uppercase text-white/35">{data.summary.activeWindowLabel}</div>
@@ -368,6 +368,150 @@ function AccountSignal({ account, total, isPrimary = false }: { account: Account
   );
 }
 
+function ReachSurface({
+  data,
+  platforms,
+  accounts,
+}: {
+  data: DashboardPayload & { secondsSinceUpdate: number };
+  platforms: PlatformCardData[];
+  accounts: AccountCardData[];
+}) {
+  const leadingPlatform = [...platforms].sort((a, b) => b.views - a.views)[0];
+  const leadingAccounts = getPlatformAccounts(accounts, leadingPlatform);
+  const platformShare = getShare(leadingPlatform?.views ?? data.summary.viewsTotal, data.summary.viewsTotal);
+  const chartValues = data.chart.map((point) => point.total);
+
+  return (
+    <section id="inicio" className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
+      <div className="absolute right-6 top-2 select-none text-[10rem] font-black leading-none text-white/[0.024] sm:text-[15rem] lg:text-[20rem]">
+        JF
+      </div>
+
+      <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="relative">
+        <div className="mb-10 flex items-center gap-3 text-xs uppercase text-red-100/75">
+          <span className="h-px w-14 bg-red-400/70" />
+          <Satellite className="h-3.5 w-3.5" />
+          <span>board de alcance social</span>
+        </div>
+
+        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+          <div>
+            <p className="mb-4 text-sm uppercase text-white/42">views totais registradas</p>
+            <h1 className="max-w-5xl text-6xl font-black leading-[0.86] text-white sm:text-8xl lg:text-[8.5rem]">
+              <LiveCounter value={data.summary.viewsTotal} duration={1.8} />
+            </h1>
+            <p className="mt-6 max-w-2xl text-xl font-medium text-white/82 sm:text-2xl">
+              Alcance real consolidado em contas conectadas.
+            </p>
+            <p className="mt-4 max-w-xl text-base leading-7 text-white/52">
+              Uma superficie de leitura para acompanhar distribuicao, dominancia e atualizacoes de canais sociais em producao.
+            </p>
+          </div>
+
+          <div className="grid gap-5 border-l border-white/10 pl-6">
+            <BoardMetric label="canal dominante" value={leadingPlatform?.platform ?? "em atualizacao"} detail={`${formatPercentage(platformShare)} do alcance atual`} />
+            <BoardMetric label="contas ativas" value={`${data.summary.accountsCovered}/${data.summary.accountsTotal}`} detail={`${formatPercentage(data.health.coverageRatio * 100)} de cobertura`} />
+            <BoardMetric label="atualizado ha" value={formatElapsed(data.secondsSinceUpdate)} detail={data.summary.activeWindowLabel} />
+          </div>
+        </div>
+
+        <div className="mt-12 grid gap-8 border-t border-white/10 pt-8 lg:grid-cols-[1fr_1fr]">
+          <div>
+            <div className="mb-3 flex items-center justify-between text-xs uppercase text-white/38">
+              <span>curva de alcance</span>
+              <span>{data.summary.activeWindowLabel}</span>
+            </div>
+            <MiniSparkline values={chartValues} color={leadingPlatform?.color ?? "#ef4444"} />
+          </div>
+
+          <div>
+            <div className="mb-3 flex items-center justify-between text-xs uppercase text-white/38">
+              <span>participacao por conta</span>
+              <span>{leadingPlatform?.platform ?? "ativo"}</span>
+            </div>
+            <div className="grid gap-4">
+              {leadingAccounts.slice(0, 3).map((account, index) => (
+                <AccountLine key={account.id} account={account} total={data.summary.viewsTotal} index={index} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </section>
+  );
+}
+
+function BoardMetric({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 border-b border-white/10 pb-4">
+      <div>
+        <p className="text-[10px] uppercase text-white/35">{label}</p>
+        <p className="mt-1 text-sm text-white/48">{detail}</p>
+      </div>
+      <p className="text-right text-2xl font-black text-white">{value}</p>
+    </div>
+  );
+}
+
+function AccountLine({ account, total, index }: { account: AccountCardData; total: number; index: number }) {
+  const share = getShare(account.views, total);
+
+  return (
+    <div>
+      <div className="mb-2 grid grid-cols-[32px_minmax(0,1fr)_auto] items-baseline gap-3">
+        <p className="text-xs text-white/35">{String(index + 1).padStart(2, "0")}</p>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-white">{account.displayName}</p>
+          <p className="truncate text-xs text-white/38">{account.handle}</p>
+        </div>
+        <p className="text-sm font-semibold text-white">{formatPercentage(share)}</p>
+      </div>
+      <div className="ml-11 h-1.5 overflow-hidden bg-white/8">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${share}%` }}
+          transition={{ duration: 1, ease: "easeOut" }}
+          className="h-full"
+          style={{ backgroundColor: account.color }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function MarketTape({ data, viewsDelta }: { data: DashboardPayload & { secondsSinceUpdate: number }; viewsDelta: number }) {
+  const publicPlatforms = getPublicPlatforms(data.platforms);
+  const leadingPlatform = [...publicPlatforms].sort((a, b) => b.views - a.views)[0];
+  const leadingAccount = [...data.accounts].sort((a, b) => b.views - a.views)[0];
+  const items = [
+    viewsDelta > 0 ? `+${formatFull(viewsDelta)} views nesta atualizacao` : `${formatCompact(data.summary.viewsTotal)} views consolidadas`,
+    `${leadingPlatform?.platform ?? "canal"} dominante`,
+    leadingAccount ? `${leadingAccount.displayName} maior conta` : "contas em atualizacao",
+    `${data.summary.accountsCovered}/${data.summary.accountsTotal} contas ativas`,
+    `${formatPercentage(data.health.coverageRatio * 100)} cobertura`,
+    `atualizado ha ${formatElapsed(data.secondsSinceUpdate)}`,
+  ];
+  const loop = [...items, ...items];
+
+  return (
+    <section className="overflow-hidden border-y border-white/10 bg-white/[0.035] py-3">
+      <motion.div
+        className="flex w-max items-center gap-8 whitespace-nowrap px-4"
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+      >
+        {loop.map((item, index) => (
+          <div key={`${item}-${index}`} className="flex items-center gap-8 text-sm font-semibold text-white/72">
+            <span>{item}</span>
+            <span className="h-1.5 w-1.5 rounded-full bg-red-300" />
+          </div>
+        ))}
+      </motion.div>
+    </section>
+  );
+}
+
 function ActivityStrip({ data, viewsDelta }: { data: DashboardPayload & { secondsSinceUpdate: number }; viewsDelta: number }) {
   const publicPlatforms = getPublicPlatforms(data.platforms);
   const leadingPlatform = [...publicPlatforms].sort((a, b) => b.views - a.views)[0];
@@ -440,6 +584,60 @@ function DataSection({ data, platforms }: { data: DashboardPayload; platforms: P
         <SnapshotCard data={data} />
       )}
     </section>
+  );
+}
+
+function AllocationLines({ data, platforms }: { data: DashboardPayload; platforms: PlatformCardData[] }) {
+  const leadingPlatform = [...platforms].sort((a, b) => b.views - a.views)[0];
+  const leadingShare = getShare(leadingPlatform?.views ?? 0, data.summary.viewsTotal);
+
+  return (
+    <section id="dados" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mb-8 grid gap-4 border-b border-white/10 pb-5 lg:grid-cols-[0.8fr_1.2fr]">
+        <SectionTitle eyebrow="alcance por plataforma" title="Como as views estao distribuidas" />
+        {leadingPlatform ? (
+          <p className="max-w-2xl text-lg font-semibold leading-7 text-white/72">
+            {leadingPlatform.platform} concentra {formatPercentage(leadingShare)} do alcance atual, com {leadingPlatform.accountsCovered}/{leadingPlatform.accountsTotal} contas com dados ativos.
+          </p>
+        ) : null}
+      </div>
+
+      <div className="grid gap-5">
+        {platforms.map((platform, index) => (
+          <AllocationLine key={platform.id} platform={platform} total={data.summary.viewsTotal} index={index} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function AllocationLine({ platform, total, index }: { platform: PlatformCardData; total: number; index: number }) {
+  const share = getShare(platform.views, total);
+
+  return (
+    <div className="grid gap-3 border-b border-white/10 pb-5 lg:grid-cols-[44px_0.7fr_1fr_120px] lg:items-center">
+      <p className="text-xs text-white/35">{String(index + 1).padStart(2, "0")}</p>
+      <div>
+        <p className="text-2xl font-black text-white">{platform.platform}</p>
+        <p className="mt-1 text-sm text-white/42">{platform.accountsCovered}/{platform.accountsTotal} contas com dados ativos</p>
+      </div>
+      <div>
+        <div className="mb-2 flex items-center justify-between text-xs text-white/42">
+          <span>{formatCompact(platform.views)} views</span>
+          <span>{formatPublicStatus(platform.status)}</span>
+        </div>
+        <div className="h-2 overflow-hidden bg-white/8">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${share}%` }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="h-full"
+            style={{ backgroundColor: platform.color }}
+          />
+        </div>
+      </div>
+      <p className="text-right text-3xl font-black text-white">{formatPercentage(share)}</p>
+    </div>
   );
 }
 
@@ -541,6 +739,60 @@ function AccountsSection({ accounts }: { accounts: AccountCardData[] }) {
         ))}
       </div>
     </section>
+  );
+}
+
+function ChannelRows({ accounts }: { accounts: AccountCardData[] }) {
+  const totalViews = accounts.reduce((sum, account) => sum + account.views, 0);
+
+  return (
+    <section id="contas" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mb-8 flex flex-col gap-3 border-b border-white/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <SectionTitle eyebrow="canais em destaque" title={`${accounts.length} contas com dados ativos`} />
+        <p className="text-sm text-white/45">Contas ordenadas pela contribuicao no alcance atual.</p>
+      </div>
+
+      <div className="grid gap-6">
+        {accounts.map((account, index) => (
+          <ChannelRow key={account.id} account={account} index={index} totalViews={totalViews} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ChannelRow({ account, index, totalViews }: { account: AccountCardData; index: number; totalViews: number }) {
+  const share = getShare(account.views, totalViews);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04 }}
+      className="grid gap-4 border-b border-white/10 pb-6 lg:grid-cols-[44px_1fr_0.75fr_140px] lg:items-center"
+    >
+      <p className="text-xs text-white/35">{String(index + 1).padStart(2, "0")}</p>
+      <div className="min-w-0">
+        <p className="truncate text-3xl font-black text-white">{account.displayName}</p>
+        <p className="mt-1 truncate text-sm text-white/42">{account.handle} / {account.platform}</p>
+      </div>
+      <div>
+        <p className="text-sm text-white/42">{formatPublicCoverageLabel(account.coverageLabel, account.platform)}</p>
+        <div className="mt-3 h-2 overflow-hidden bg-white/8">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${share}%` }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="h-full"
+            style={{ backgroundColor: account.color }}
+          />
+        </div>
+      </div>
+      <div className="text-left lg:text-right">
+        <p className="text-3xl font-black text-white">{formatCompact(account.views)}</p>
+        <p className="mt-1 text-sm text-white/42">{formatPercentage(share)} entre contas</p>
+      </div>
+    </motion.div>
   );
 }
 
@@ -979,10 +1231,10 @@ function PortfolioApp() {
       <TopBar data={data} />
 
       <main>
-        <Hero data={data} platforms={publicPlatforms} accounts={data.accounts} />
-        <ActivityStrip data={data} viewsDelta={lastViewsDelta} />
-        {publicPlatforms.length > 0 ? <DataSection data={data} platforms={publicPlatforms} /> : null}
-        {data.accounts.length > 0 ? <AccountsSection accounts={data.accounts} /> : null}
+        <ReachSurface data={data} platforms={publicPlatforms} accounts={data.accounts} />
+        <MarketTape data={data} viewsDelta={lastViewsDelta} />
+        {publicPlatforms.length > 0 ? <AllocationLines data={data} platforms={publicPlatforms} /> : null}
+        {data.accounts.length > 0 ? <ChannelRows accounts={data.accounts} /> : null}
         <EventsSection data={data} />
         <CasesSection cases={data.cases} />
         <ContactSection />
