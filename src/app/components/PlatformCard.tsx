@@ -46,6 +46,7 @@ export function PlatformCard({
   delay = 0,
 }: PlatformCardProps) {
   const isPositive = change >= 0;
+  const hasAccounts = accountsTotal > 0;
 
   return (
     <motion.div
@@ -86,7 +87,7 @@ export function PlatformCard({
             <LiveCounter value={views} />
           </p>
           <p className="text-[11px] text-white/40">
-            cobertura {accountsCovered}/{accountsTotal} contas
+            {hasAccounts ? `cobertura ${accountsCovered}/${accountsTotal} contas` : "aguardando conexao oficial"}
           </p>
         </div>
 

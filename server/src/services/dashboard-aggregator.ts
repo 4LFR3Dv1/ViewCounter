@@ -114,6 +114,7 @@ function buildPlatformSparkline(
 }
 
 function resolvePlatformStatus(accounts: PersistedAccount[], coveredCount: number) {
+  if (accounts.length === 0) return "pending_auth";
   if (coveredCount < accounts.length) return "warning";
   if (accounts.some((account) => account.status === "manual_mode")) return "manual_mode";
   if (accounts.some((account) => account.status === "syncing")) return "syncing";

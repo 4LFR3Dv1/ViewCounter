@@ -1,6 +1,9 @@
 import { motion } from "motion/react";
+import { useMemo } from "react";
 import {
   AlertCircle,
+  ArrowUpRight,
+  BadgeCheck,
   Instagram,
   Music2,
   Radar,
@@ -28,8 +31,20 @@ function getPlatformIcon(platform: PlatformCardData) {
   return <Music2 className="h-5 w-5" />;
 }
 
+function formatCompact(value: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
 export default function App() {
   const { data, isLoading, error } = useDashboard();
+  const showOpsPanel = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    const searchParams = new URLSearchParams(window.location.search);
+    return searchParams.get("admin") === "1" || window.location.hash === "#ops";
+  }, []);
 
   if (isLoading && !data) {
     return (
@@ -71,27 +86,28 @@ export default function App() {
       <AnimatedBackground />
 
       <div className="relative mx-auto flex min-h-screen max-w-7xl flex-col px-6 py-6">
-        <header className="mb-6 grid gap-4 lg:grid-cols-[1.4fr_0.8fr]">
+        <header className="mb-6 grid gap-4 lg:grid-cols-[1.35fr_0.85fr]">
           <motion.section
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(140deg,rgba(99,102,241,0.18),rgba(8,10,18,0.84)_48%,rgba(6,182,212,0.08))] p-6 backdrop-blur-xl"
+            className="relative overflow-hidden rounded-[2.25rem] border border-white/10 bg-[linear-gradient(140deg,rgba(14,165,233,0.16),rgba(8,10,18,0.88)_42%,rgba(245,158,11,0.10))] p-6 shadow-2xl shadow-black/35 backdrop-blur-xl"
           >
-            <div className="absolute -left-12 top-8 h-40 w-40 rounded-full bg-indigo-500/20 blur-3xl" />
-            <div className="absolute bottom-0 right-0 h-48 w-48 rounded-full bg-cyan-400/10 blur-3xl" />
+            <div className="absolute -left-12 top-8 h-44 w-44 rounded-full bg-cyan-500/20 blur-3xl" />
+            <div className="absolute bottom-0 right-0 h-56 w-56 rounded-full bg-amber-400/10 blur-3xl" />
+            <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-cyan-200/40 to-transparent" />
 
             <div className="relative flex flex-col gap-8">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-white/60">
+                  <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/5 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100/70">
                     <Radar className="h-3.5 w-3.5" />
-                    portfolio operating system
+                    JF Clipes operating system
                   </div>
-                  <h1 className="max-w-3xl text-4xl font-semibold leading-tight md:text-5xl">
-                    Prova operacional de crescimento social acontecendo agora.
+                  <h1 className="max-w-3xl text-4xl font-semibold leading-[0.98] tracking-[-0.04em] md:text-6xl">
+                    Uma central viva de prova social, alimentada por dados reais.
                   </h1>
-                  <p className="mt-3 max-w-2xl text-sm text-white/55 md:text-base">
-                    Instagram, YouTube e TikTok consolidados em uma unica superficie viva. O design segue operando mesmo quando uma conta entra em alerta, expira ou depende de snapshot manual.
+                  <p className="mt-4 max-w-2xl text-sm leading-6 text-white/58 md:text-base">
+                    YouTube ja conectado por OAuth oficial. Instagram e TikTok entram como sensores modulares: quando chegam, somam; quando oscilam, a experiencia continua operacional.
                   </p>
                 </div>
 
@@ -105,20 +121,32 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-                <div className="rounded-[1.75rem] border border-white/10 bg-black/20 p-5">
+              <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+                <div className="relative overflow-hidden rounded-[1.9rem] border border-white/10 bg-black/25 p-5">
+                  <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-white/45">
+                    <BadgeCheck className="h-3.5 w-3.5 text-emerald-300" />
+                    dados oficiais
+                  </div>
                   <div className="mb-3 flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-white/40">
                     <Sparkles className="h-4 w-4 text-indigo-300" />
-                    total ativo
+                    total verificado
                   </div>
                   <div className="flex flex-wrap items-end gap-4">
-                    <p className="text-5xl font-bold text-white md:text-6xl">
+                    <p className="text-5xl font-bold tracking-[-0.05em] text-white md:text-7xl">
                       +<LiveCounter value={data.summary.viewsTotal} duration={2} />
                     </p>
                     <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/60">
                       <p className="font-medium text-emerald-300">+{data.summary.deltaPercentage}%</p>
                       <p>{data.summary.activeWindowLabel}</p>
                     </div>
+                  </div>
+                  <div className="mt-5 grid gap-2 sm:grid-cols-3">
+                    {data.platforms.map((platform) => (
+                      <div key={platform.id} className="rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2">
+                        <p className="text-[11px] uppercase tracking-[0.18em] text-white/35">{platform.platform}</p>
+                        <p className="mt-1 text-sm font-semibold text-white">{formatCompact(platform.views)}</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
@@ -131,7 +159,7 @@ export default function App() {
                     <p className="text-2xl font-semibold text-white">
                       {data.summary.accountsCovered}/{data.summary.accountsTotal}
                     </p>
-                    <p className="mt-1 text-sm text-white/50">contas alimentando o total global neste momento</p>
+                    <p className="mt-1 text-sm text-white/50">contas com snapshot oficial alimentando a vitrine</p>
                   </div>
 
                   <div className="rounded-[1.5rem] border border-white/10 bg-black/20 p-4">
@@ -140,7 +168,7 @@ export default function App() {
                       malha resiliente
                     </div>
                     <p className="text-2xl font-semibold text-white">{Math.round(data.health.coverageRatio * 100)}%</p>
-                    <p className="mt-1 text-sm text-white/50">o design continua vivo mesmo com cobertura parcial</p>
+                    <p className="mt-1 text-sm text-white/50">camada visual tolerante a integrações pendentes</p>
                   </div>
                 </div>
               </div>
@@ -170,7 +198,7 @@ export default function App() {
                   <p className="text-sm text-white/45">cada rede entra como sensor da central, nao como dependencia estrutural</p>
                 </div>
                 <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/55">
-                  {data.platforms.length} redes ativas
+                  {data.platforms.filter((platform) => platform.accountsCovered > 0).length}/{data.platforms.length} redes com dados
                 </div>
               </div>
 
@@ -276,7 +304,27 @@ export default function App() {
               </div>
             </div>
 
-            <ConnectionsPanel />
+            {showOpsPanel ? (
+              <ConnectionsPanel />
+            ) : (
+              <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.035] p-5 backdrop-blur-xl">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-white">Camada operacional protegida</h2>
+                    <p className="mt-1 text-sm text-white/45">
+                      Conexoes OAuth e sync manual ficam fora da narrativa publica. Acesse com <span className="text-white/70">?admin=1</span>.
+                    </p>
+                  </div>
+                  <a
+                    href="/?admin=1"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/75 transition-colors hover:bg-white/10"
+                  >
+                    Abrir operacao
+                    <ArrowUpRight className="h-4 w-4" />
+                  </a>
+                </div>
+              </div>
+            )}
           </section>
         </main>
       </div>
