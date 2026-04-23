@@ -393,42 +393,58 @@ function ReachSurface({
   const leadingAccounts = getPlatformAccounts(accounts, leadingPlatform);
   const platformShare = getShare(leadingPlatform?.views ?? data.summary.viewsTotal, data.summary.viewsTotal);
   const chartValues = data.chart.map((point) => point.total);
+  const leadingAccount = [...accounts].sort((a, b) => b.views - a.views)[0];
 
   return (
-    <section id="inicio" className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-16">
-      <div className="absolute right-6 top-2 select-none text-[10rem] font-black leading-none text-white/[0.024] sm:text-[15rem] lg:text-[20rem]">
-        JF
-      </div>
+    <section id="inicio" className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-14">
+      <motion.div
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden border-y border-white/12 bg-[linear-gradient(120deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018)_42%,rgba(239,68,68,0.055))] px-4 py-5 shadow-[0_28px_90px_rgba(0,0,0,0.32)] sm:px-6 lg:px-8"
+      >
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-red-400/70 via-white/18 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/16 to-red-400/55" />
+        <div className="absolute -right-10 top-[-2rem] select-none text-[10rem] font-black leading-none text-white/[0.02] sm:text-[15rem] lg:text-[21rem]">
+          JF
+        </div>
+        <div className="absolute left-0 top-0 h-28 w-px bg-gradient-to-b from-red-300/70 to-transparent" />
+        <div className="absolute bottom-0 right-0 h-28 w-px bg-gradient-to-t from-red-300/55 to-transparent" />
 
-      <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="relative">
-        <div className="mb-10 flex items-center gap-3 text-xs uppercase text-red-100/75">
-          <span className="h-px w-14 bg-red-400/70" />
-          <Satellite className="h-3.5 w-3.5" />
-          <span>board de alcance social</span>
+        <div className="relative grid grid-cols-2 gap-3 border-b border-white/10 pb-4 text-[10px] uppercase text-white/38 sm:grid-cols-4">
+          <span>main reach board</span>
+          <span>{data.summary.activeWindowLabel}</span>
+          <span>{leadingPlatform?.platform ?? "canal"} dominante</span>
+          <span className="sm:text-right">update {formatElapsed(data.secondsSinceUpdate)}</span>
         </div>
 
-        <div className="grid gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
+        <div className="relative grid gap-8 py-10 lg:grid-cols-[1.18fr_0.82fr] lg:items-stretch">
           <div>
-            <p className="mb-4 text-sm uppercase text-white/42">views totais registradas</p>
-            <h1 className="max-w-5xl text-6xl font-black leading-[0.86] text-white sm:text-8xl lg:text-[8.5rem]">
+            <div className="mb-5 flex items-center gap-3 text-xs uppercase text-red-100/75">
+              <span className="h-px w-14 bg-red-400/70" />
+              <Satellite className="h-3.5 w-3.5" />
+              <span>alcance social em producao</span>
+            </div>
+            <p className="mb-4 text-sm uppercase text-white/40">views totais registradas</p>
+            <h1 className="max-w-5xl text-6xl font-black leading-[0.84] text-white sm:text-8xl lg:text-[9rem]">
               <LiveCounter value={data.summary.viewsTotal} duration={1.8} />
             </h1>
-            <p className="mt-6 max-w-2xl text-xl font-medium text-white/82 sm:text-2xl">
-              Alcance real consolidado em contas conectadas.
-            </p>
-            <p className="mt-4 max-w-xl text-base leading-7 text-white/52">
-              Uma superficie de leitura para acompanhar distribuicao, dominancia e atualizacoes de canais sociais em producao.
-            </p>
+            <div className="mt-6 max-w-3xl border-l border-red-300/45 pl-5">
+              <p className="text-xl font-medium text-white/82 sm:text-2xl">Alcance real consolidado em contas conectadas.</p>
+              <p className="mt-3 max-w-xl text-base leading-7 text-white/52">
+                Leitura publica de distribuicao, dominancia e atualizacoes reais dos canais sociais.
+              </p>
+            </div>
           </div>
 
-          <div className="grid gap-5 border-l border-white/10 pl-6">
+          <div className="grid content-between gap-5 border-l border-white/10 pl-6">
             <BoardMetric label="canal dominante" value={leadingPlatform?.platform ?? "em atualizacao"} detail={`${formatPercentage(platformShare)} do alcance atual`} />
             <BoardMetric label="contas ativas" value={`${data.summary.accountsCovered}/${data.summary.accountsTotal}`} detail={`${formatPercentage(data.health.coverageRatio * 100)} de cobertura`} />
             <BoardMetric label="atualizado ha" value={formatElapsed(data.secondsSinceUpdate)} detail={data.summary.activeWindowLabel} />
+            <BoardMetric label="maior conta" value={leadingAccount?.displayName ?? "em atualizacao"} detail={leadingAccount ? `${formatPercentage(getShare(leadingAccount.views, data.summary.viewsTotal))} do total` : "aguardando dados"} />
           </div>
         </div>
 
-        <div className="mt-12 grid gap-8 border-t border-white/10 pt-8 lg:grid-cols-[1fr_1fr]">
+        <div className="relative grid gap-8 border-t border-white/10 pt-7 lg:grid-cols-[1fr_1.15fr]">
           <div>
             <div className="mb-3 flex items-center justify-between text-xs uppercase text-white/38">
               <span>curva de alcance</span>
@@ -439,15 +455,25 @@ function ReachSurface({
 
           <div>
             <div className="mb-3 flex items-center justify-between text-xs uppercase text-white/38">
-              <span>participacao por conta</span>
+              <span>dominance rail</span>
               <span>{leadingPlatform?.platform ?? "ativo"}</span>
             </div>
-            <div className="grid gap-4">
+            <div className="grid gap-3">
               {leadingAccounts.slice(0, 3).map((account, index) => (
                 <AccountLine key={account.id} account={account} total={data.summary.viewsTotal} index={index} />
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="relative mt-7 h-3 overflow-hidden bg-white/[0.055]">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${platformShare}%` }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+            className="h-full bg-gradient-to-r from-red-600 via-red-300 to-white"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,transparent_12%,rgba(3,3,5,0.62)_12.2%,transparent_12.4%,transparent_24%,rgba(3,3,5,0.62)_24.2%,transparent_24.4%,transparent_36%,rgba(3,3,5,0.62)_36.2%,transparent_36.4%,transparent_48%,rgba(3,3,5,0.62)_48.2%,transparent_48.4%,transparent_60%,rgba(3,3,5,0.62)_60.2%,transparent_60.4%,transparent_72%,rgba(3,3,5,0.62)_72.2%,transparent_72.4%,transparent_84%,rgba(3,3,5,0.62)_84.2%,transparent_84.4%)]" />
         </div>
       </motion.div>
     </section>
@@ -470,16 +496,17 @@ function AccountLine({ account, total, index }: { account: AccountCardData; tota
   const share = getShare(account.views, total);
 
   return (
-    <div>
-      <div className="mb-2 grid grid-cols-[32px_minmax(0,1fr)_auto] items-baseline gap-3">
+    <div className="border-b border-white/10 pb-3">
+      <div className="mb-2 grid grid-cols-[32px_minmax(0,1fr)_auto_auto] items-baseline gap-3">
         <p className="text-xs text-white/35">{String(index + 1).padStart(2, "0")}</p>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-white">{account.displayName}</p>
           <p className="truncate text-xs text-white/38">{account.handle}</p>
         </div>
+        <p className="hidden text-xs text-white/35 sm:block">{formatCompact(account.views)}</p>
         <p className="text-sm font-semibold text-white">{formatPercentage(share)}</p>
       </div>
-      <div className="ml-11 h-1.5 overflow-hidden bg-white/8">
+      <div className="ml-11 h-2 overflow-hidden bg-white/8">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${share}%` }}
@@ -497,29 +524,32 @@ function MarketTape({ data, viewsDelta }: { data: DashboardPayload & { secondsSi
   const leadingPlatform = [...publicPlatforms].sort((a, b) => b.views - a.views)[0];
   const leadingAccount = [...data.accounts].sort((a, b) => b.views - a.views)[0];
   const items = [
-    viewsDelta > 0 ? `+${formatFull(viewsDelta)} views nesta atualizacao` : `${formatCompact(data.summary.viewsTotal)} views consolidadas`,
-    `${leadingPlatform?.platform ?? "canal"} dominante`,
-    leadingAccount ? `${leadingAccount.displayName} maior conta` : "contas em atualizacao",
-    `${data.summary.accountsCovered}/${data.summary.accountsTotal} contas ativas`,
-    `${formatPercentage(data.health.coverageRatio * 100)} cobertura`,
-    `atualizado ha ${formatElapsed(data.secondsSinceUpdate)}`,
+    { label: "alcance", value: viewsDelta > 0 ? `+${formatFull(viewsDelta)} views nesta atualizacao` : `${formatCompact(data.summary.viewsTotal)} views consolidadas` },
+    { label: "dominancia", value: `${leadingPlatform?.platform ?? "canal"} dominante` },
+    { label: "lider", value: leadingAccount ? `${leadingAccount.displayName} maior conta` : "contas em atualizacao" },
+    { label: "canais", value: `${data.summary.accountsCovered}/${data.summary.accountsTotal} contas ativas` },
+    { label: "cobertura", value: `${formatPercentage(data.health.coverageRatio * 100)} cobertura` },
+    { label: "sync", value: `atualizado ha ${formatElapsed(data.secondsSinceUpdate)}` },
   ];
   const loop = [...items, ...items];
 
   return (
-    <section className="overflow-hidden border-y border-white/10 bg-white/[0.035] py-3">
+    <section className="overflow-hidden border-y border-white/10 bg-[#050506]/86">
+      <div className="h-px bg-gradient-to-r from-red-400/55 via-white/12 to-transparent" />
       <motion.div
-        className="flex w-max items-center gap-8 whitespace-nowrap px-4"
+        className="flex h-12 w-max items-center whitespace-nowrap"
         animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+        transition={{ duration: 32, repeat: Infinity, ease: "linear" }}
       >
         {loop.map((item, index) => (
-          <div key={`${item}-${index}`} className="flex items-center gap-8 text-sm font-semibold text-white/72">
-            <span>{item}</span>
-            <span className="h-1.5 w-1.5 rounded-full bg-red-300" />
+          <div key={`${item.label}-${item.value}-${index}`} className="flex h-full items-center border-r border-white/10 px-5 text-sm font-semibold text-white/74">
+            <span className="mr-3 text-[10px] uppercase text-red-100/42">{item.label}</span>
+            <span>{item.value}</span>
+            <span className="ml-5 text-white/20">//</span>
           </div>
         ))}
       </motion.div>
+      <div className="h-px bg-gradient-to-r from-transparent via-white/12 to-red-400/45" />
     </section>
   );
 }
@@ -758,13 +788,22 @@ function ChannelRows({ accounts }: { accounts: AccountCardData[] }) {
   const totalViews = accounts.reduce((sum, account) => sum + account.views, 0);
 
   return (
-    <section id="contas" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8 flex flex-col gap-3 border-b border-white/10 pb-5 sm:flex-row sm:items-end sm:justify-between">
-        <SectionTitle eyebrow="canais em destaque" title={`${accounts.length} contas com dados ativos`} />
-        <p className="text-sm text-white/45">Contas ordenadas pela contribuicao no alcance atual.</p>
+    <section id="contas" className="mx-auto max-w-7xl px-4 py-9 sm:px-6 lg:px-8">
+      <div className="mb-6 grid gap-4 border-b border-white/10 pb-5 lg:grid-cols-[0.75fr_1.25fr] lg:items-end">
+        <SectionTitle eyebrow="channel strips" title={`${accounts.length} contas com dados ativos`} />
+        <p className="max-w-2xl text-sm leading-6 text-white/48 lg:justify-self-end lg:text-right">
+          Cada linha mostra contribuicao real no alcance total, origem da atualizacao e peso relativo entre contas conectadas.
+        </p>
       </div>
 
-      <div className="grid gap-6">
+      <div className="border-t border-white/10">
+        <div className="hidden grid-cols-[56px_minmax(0,1fr)_0.7fr_1fr_150px] border-b border-white/10 py-3 text-[10px] uppercase text-white/32 lg:grid">
+          <span>idx</span>
+          <span>canal</span>
+          <span>origem</span>
+          <span>participacao</span>
+          <span className="text-right">views</span>
+        </div>
         {accounts.map((account, index) => (
           <ChannelRow key={account.id} account={account} index={index} totalViews={totalViews} />
         ))}
@@ -781,16 +820,21 @@ function ChannelRow({ account, index, totalViews }: { account: AccountCardData; 
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.04 }}
-      className="grid gap-4 border-b border-white/10 pb-6 lg:grid-cols-[44px_1fr_0.75fr_140px] lg:items-center"
+      className="group relative grid gap-4 border-b border-white/10 bg-white/[0.014] px-0 py-5 transition-colors hover:bg-white/[0.035] lg:grid-cols-[56px_minmax(0,1fr)_0.7fr_1fr_150px] lg:items-center"
     >
-      <p className="text-xs text-white/35">{String(index + 1).padStart(2, "0")}</p>
+      <span className="absolute inset-y-0 left-0 w-px opacity-80" style={{ backgroundColor: account.color }} />
+      <p className="pl-3 text-xs font-semibold text-white/35 lg:pl-0">{String(index + 1).padStart(2, "0")}</p>
       <div className="min-w-0">
         <p className="truncate text-3xl font-black text-white">{account.displayName}</p>
         <p className="mt-1 truncate text-sm text-white/42">{account.handle} / {account.platform}</p>
       </div>
+      <p className="text-sm text-white/42">{formatPublicCoverageLabel(account.coverageLabel, account.platform)}</p>
       <div>
-        <p className="text-sm text-white/42">{formatPublicCoverageLabel(account.coverageLabel, account.platform)}</p>
-        <div className="mt-3 h-2 overflow-hidden bg-white/8">
+        <div className="mb-2 flex items-center justify-between text-xs uppercase text-white/38">
+          <span>peso relativo</span>
+          <span>{formatPercentage(share)}</span>
+        </div>
+        <div className="h-3 overflow-hidden bg-white/8">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${share}%` }}
@@ -802,7 +846,7 @@ function ChannelRow({ account, index, totalViews }: { account: AccountCardData; 
       </div>
       <div className="text-left lg:text-right">
         <p className="text-3xl font-black text-white">{formatCompact(account.views)}</p>
-        <p className="mt-1 text-sm text-white/42">{formatPercentage(share)} entre contas</p>
+        <p className="mt-1 text-sm text-white/42">{formatFull(account.views)}</p>
       </div>
     </motion.div>
   );
@@ -875,49 +919,62 @@ function EventsSection({ data }: { data: DashboardPayload & { secondsSinceUpdate
   );
 
   return (
-    <section id="atividade" className="mx-auto grid max-w-7xl gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[0.65fr_1.35fr] lg:px-8">
-      <div className="rounded-[2rem] bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl">
-        <SectionTitle eyebrow="atualizacoes" title="Movimento recente" />
-        <div className="mt-8 grid gap-3 text-sm text-white/58">
-          <div className="flex items-center gap-3">
+    <section id="atividade" className="mx-auto grid max-w-7xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[0.58fr_1.42fr] lg:px-8">
+      <div className="border-y border-white/10 py-5">
+        <SectionTitle eyebrow="runtime ledger" title="Movimento recente" />
+        <div className="mt-7 border-t border-white/10">
+          <LedgerStat label="ultima atualizacao" value={formatElapsed(data.secondsSinceUpdate)} />
+          <LedgerStat label="eventos exibidos" value={String(visibleEvents.length)} />
+          <LedgerStat label="contas com atividade" value={String(activeAccounts.size)} />
+          <div className="flex items-center gap-3 border-b border-white/10 py-4 text-sm text-white/50">
             <Clock3 className="h-4 w-4 text-red-300" />
-            <span>atualizado ha {formatElapsed(data.secondsSinceUpdate)}</span>
+            <span>log alimentado por snapshots reais</span>
           </div>
-          <SignalStat label="eventos exibidos" value={String(visibleEvents.length)} />
-          <SignalStat label="contas com atividade" value={String(activeAccounts.size)} />
         </div>
       </div>
 
-      <div className="relative grid gap-3 border-l border-red-400/35 pl-4">
+      <div className="relative border-y border-white/10">
+        <div className="hidden grid-cols-[42px_minmax(0,1fr)_130px_110px_90px] border-b border-white/10 py-3 text-[10px] uppercase text-white/32 lg:grid">
+          <span>seq</span>
+          <span>evento</span>
+          <span>views</span>
+          <span>ganho</span>
+          <span>var</span>
+        </div>
         {visibleEvents.map((event, index) => (
           <motion.div
             key={event.id}
             initial={{ opacity: 0, x: 14 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.08 + index * 0.04 }}
-            className={`relative flex items-center gap-4 rounded-2xl p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl ${
-              index === 0 ? "bg-red-500/[0.11]" : "bg-[#070709]/82"
+            className={`relative grid gap-3 border-b border-white/10 py-4 lg:grid-cols-[42px_minmax(0,1fr)_130px_110px_90px] lg:items-end ${
+              index === 0 ? "bg-red-500/[0.075]" : "bg-white/[0.012]"
             }`}
           >
-            <span className="absolute -left-[23px] h-3 w-3 rounded-full border border-red-300 bg-[#030305]" />
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/[0.055]" style={{ color: event.color }}>
-              <Activity className="h-5 w-5" />
+            <div className="flex items-center gap-3 text-xs font-semibold text-white/35">
+              <span className="h-2 w-2" style={{ backgroundColor: event.color }} />
+              {String(index + 1).padStart(2, "0")}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_130px_110px_90px] lg:items-end">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-white">{formatPublicEventText(event.text, event.platform)}</p>
-                  <p className="mt-1 text-xs text-white/42">{event.platform} / {formatClock(event.createdAt)}</p>
-                </div>
-                <EventMetric label="views no update" value={typeof event.viewsTotal === "number" ? formatCompact(event.viewsTotal) : "--"} />
-                <EventMetric label="ganho" value={typeof event.viewsDelta === "number" ? `+${formatCompact(event.viewsDelta)}` : "--"} />
-                <EventMetric label="variacao" value={typeof event.deltaPercentage === "number" ? `${event.deltaPercentage}%` : "--"} />
-              </div>
+              <p className="truncate text-sm font-medium text-white">{formatPublicEventText(event.text, event.platform)}</p>
+              <p className="mt-1 text-xs text-white/42">{event.platform} / {formatClock(event.createdAt)}</p>
             </div>
+            <EventMetric label="views no update" value={typeof event.viewsTotal === "number" ? formatCompact(event.viewsTotal) : "--"} />
+            <EventMetric label="ganho" value={typeof event.viewsDelta === "number" ? `+${formatCompact(event.viewsDelta)}` : "--"} />
+            <EventMetric label="variacao" value={typeof event.deltaPercentage === "number" ? `${event.deltaPercentage}%` : "--"} />
           </motion.div>
         ))}
       </div>
     </section>
+  );
+}
+
+function LedgerStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-4 border-b border-white/10 py-4">
+      <p className="text-[10px] uppercase text-white/35">{label}</p>
+      <p className="text-xl font-black text-white">{value}</p>
+    </div>
   );
 }
 
@@ -971,30 +1028,29 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function ContactSection() {
   return (
-    <section id="contato" className="mx-auto max-w-7xl px-4 py-4 pb-10 sm:px-6 lg:px-8">
-      <div className="relative overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,rgba(239,68,68,0.18),rgba(255,255,255,0.07)_42%,rgba(255,255,255,0.035))] p-px shadow-2xl shadow-black/25">
-        <div className="absolute right-6 top-0 select-none text-8xl font-black leading-none text-white/[0.035]">JF</div>
-        <div className="relative rounded-[2rem] bg-[#070709]/92 p-6 backdrop-blur-2xl">
-        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+    <section id="contato" className="mx-auto max-w-7xl px-4 py-8 pb-12 sm:px-6 lg:px-8">
+      <div className="relative overflow-hidden border-y border-white/10 bg-[linear-gradient(115deg,rgba(255,255,255,0.045),rgba(239,68,68,0.055)_52%,rgba(255,255,255,0.018))] px-5 py-6 shadow-[0_28px_90px_rgba(0,0,0,0.28)]">
+        <div className="absolute right-3 top-[-1rem] select-none text-8xl font-black leading-none text-white/[0.026] sm:text-[10rem]">JF</div>
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-red-400/65 via-white/14 to-transparent" />
+        <div className="relative grid gap-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
           <div>
-            <p className="text-sm font-semibold uppercase text-white/42">contato</p>
-            <h2 className="mt-2 max-w-2xl text-3xl font-black text-white">Quer transformar alcance em presenca comercial?</h2>
+            <p className="text-xs font-semibold uppercase text-white/38">commercial endpoint</p>
+            <h2 className="mt-2 max-w-3xl text-3xl font-black text-white sm:text-4xl">Quer transformar alcance em presenca comercial?</h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-white/52">
               Dados reais, canais conectados e acompanhamento continuo para mostrar o que esta acontecendo nas redes.
             </p>
           </div>
           <a
             href="#inicio"
-            className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#030305] transition-transform hover:scale-[1.02]"
+            className="inline-flex items-center justify-center border border-white/14 bg-white px-5 py-3 text-sm font-semibold text-[#030305] transition-transform hover:translate-x-1"
           >
             Fale comigo
           </a>
         </div>
-        <div className="mt-6 flex flex-wrap gap-4 border-t border-white/10 pt-4 text-sm font-medium text-white/45">
+        <div className="relative mt-6 flex flex-wrap gap-4 border-t border-white/10 pt-4 text-sm font-medium text-white/45">
           <a className="transition-colors hover:text-white" href="/terms">Termos de Servico</a>
           <a className="transition-colors hover:text-white" href="/privacy">Politica de Privacidade</a>
           <span>Dados reais, atualizados em producao</span>
-        </div>
         </div>
       </div>
     </section>
