@@ -119,7 +119,22 @@ function MiniSparkline({ values, color = "#ef4444" }: { values: number[]; color?
 function SignalBackdrop() {
   return (
     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden bg-[#030305]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_12%,rgba(239,68,68,0.22),transparent_30%),radial-gradient(circle_at_80%_18%,rgba(255,255,255,0.08),transparent_26%),linear-gradient(145deg,#030305_0%,#09080b_48%,#050506_100%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_12%_8%,rgba(239,68,68,0.18),transparent_34%),radial-gradient(ellipse_at_78%_18%,rgba(255,255,255,0.06),transparent_30%),linear-gradient(145deg,#030305_0%,#09080b_48%,#050506_100%)]" />
+      <motion.div
+        className="absolute -left-[16%] top-[8%] h-[34rem] w-[52rem] rounded-[999px] bg-[radial-gradient(ellipse_at_center,rgba(239,68,68,0.16),rgba(239,68,68,0.045)_42%,transparent_72%)] blur-[90px] mix-blend-screen"
+        animate={{ opacity: [0.28, 0.52, 0.28], x: [0, 34, 0], y: [0, 20, 0] }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute right-[-20%] top-[24%] h-[38rem] w-[58rem] rounded-[999px] bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.075),rgba(239,68,68,0.035)_48%,transparent_74%)] blur-[110px] mix-blend-screen"
+        animate={{ opacity: [0.18, 0.38, 0.18], x: [0, -28, 0], y: [0, -24, 0] }}
+        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute bottom-[-24%] left-[18%] h-[36rem] w-[62rem] rounded-[999px] bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.11),rgba(255,255,255,0.028)_44%,transparent_72%)] blur-[120px] mix-blend-screen"
+        animate={{ opacity: [0.2, 0.42, 0.2], x: [0, -26, 0], y: [0, -18, 0] }}
+        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+      />
       <div className="absolute inset-0 opacity-55 [background-image:linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:44px_44px]" />
       <div className="absolute inset-0 bg-[linear-gradient(110deg,transparent_0%,transparent_46%,rgba(239,68,68,0.16)_47%,transparent_51%,transparent_100%)]" />
       <motion.div
