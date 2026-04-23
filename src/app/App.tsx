@@ -179,40 +179,49 @@ function ShellMessage({ children }: { children: React.ReactNode }) {
 }
 
 function TopBar({ data }: { data: DashboardPayload & { secondsSinceUpdate: number } }) {
+  const publicPlatforms = getPublicPlatforms(data.platforms);
+  const leadingPlatform = [...publicPlatforms].sort((a, b) => b.views - a.views)[0];
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="sticky top-0 z-30 border-b border-white/10 bg-[#030305]/82 backdrop-blur-2xl"
+      className="sticky top-0 z-30 border-b border-white/12 bg-[#030305]/88 backdrop-blur-2xl"
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <a href="#inicio" className="flex items-center">
+      <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-stretch px-4 sm:px-6 lg:grid-cols-[260px_minmax(0,1fr)_auto] lg:px-8">
+        <a href="#inicio" className="flex min-h-16 items-center border-r border-white/10 pr-5">
           <div>
-            <p className="text-base font-bold leading-tight text-white">JF Portfolio</p>
-            <p className="text-[11px] text-white/42">alcance real em redes sociais</p>
+            <p className="text-lg font-black leading-none text-white">JF Portfolio</p>
+            <p className="mt-1 text-[10px] uppercase text-white/38">social reach board</p>
           </div>
         </a>
 
-        <nav className="hidden items-center gap-6 text-sm text-white/58 md:flex">
-          <a className="transition-colors hover:text-white" href="#dados">Alcance</a>
-          <a className="transition-colors hover:text-white" href="#contas">Canais</a>
-          <a className="transition-colors hover:text-white" href="#atividade">Atualizacoes</a>
-          {data.cases.length > 0 ? <a className="transition-colors hover:text-white" href="#cases">Cases</a> : null}
-          <a className="transition-colors hover:text-white" href="/terms">Termos</a>
-          <a className="transition-colors hover:text-white" href="/privacy">Privacidade</a>
+        <nav className="hidden min-h-16 items-center lg:grid lg:grid-cols-6">
+          <CommandLink href="#dados" label="Alcance" index="01" />
+          <CommandLink href="#contas" label="Canais" index="02" />
+          <CommandLink href="#atividade" label="Updates" index="03" />
+          {data.cases.length > 0 ? <CommandLink href="#cases" label="Cases" index="04" /> : <CommandLink href="/terms" label="Termos" index="04" />}
+          <CommandLink href="/privacy" label="Privacy" index="05" />
+          <div className="border-l border-white/10 px-4 py-3">
+            <p className="text-[9px] uppercase text-white/30">dominante</p>
+            <p className="mt-1 truncate text-xs font-semibold text-white/68">{leadingPlatform?.platform ?? "ativo"}</p>
+          </div>
         </nav>
 
-        <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-3 py-1.5 text-xs text-white/66 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:flex">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-300 opacity-45" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-300" />
+        <div className="grid min-h-16 grid-cols-[auto_auto] items-stretch border-l border-white/10">
+          <div className="hidden min-w-36 px-4 py-3 sm:block">
+            <p className="text-[9px] uppercase text-white/30">sync</p>
+            <span className="mt-1 flex items-center gap-2 text-xs font-semibold text-white/68">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping bg-red-300 opacity-45" />
+                <span className="relative inline-flex h-2 w-2 bg-red-300" />
+              </span>
+              {formatElapsed(data.secondsSinceUpdate)}
             </span>
-            <span>atualizado ha {formatElapsed(data.secondsSinceUpdate)}</span>
           </div>
           <a
             href="#contato"
-            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-[#030305] transition-transform hover:scale-[1.02]"
+            className="inline-flex min-h-16 items-center gap-2 bg-white px-4 text-sm font-semibold text-[#030305] transition-transform hover:translate-x-1 sm:px-5"
           >
             <MessageCircle className="h-4 w-4" />
             Fale comigo
@@ -220,6 +229,15 @@ function TopBar({ data }: { data: DashboardPayload & { secondsSinceUpdate: numbe
         </div>
       </div>
     </motion.header>
+  );
+}
+
+function CommandLink({ href, label, index }: { href: string; label: string; index: string }) {
+  return (
+    <a className="border-l border-white/10 px-4 py-3 transition-colors hover:bg-white/[0.035]" href={href}>
+      <p className="text-[9px] uppercase text-white/28">{index}</p>
+      <p className="mt-1 text-xs font-semibold text-white/62">{label}</p>
+    </a>
   );
 }
 
@@ -394,16 +412,19 @@ function ReachSurface({
   const platformShare = getShare(leadingPlatform?.views ?? data.summary.viewsTotal, data.summary.viewsTotal);
   const chartValues = data.chart.map((point) => point.total);
   const leadingAccount = [...accounts].sort((a, b) => b.views - a.views)[0];
+  const railAccounts = leadingAccounts.length > 0 ? leadingAccounts : accounts;
 
   return (
     <section id="inicio" className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-14">
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden border-y border-white/12 bg-[linear-gradient(120deg,rgba(255,255,255,0.055),rgba(255,255,255,0.018)_42%,rgba(239,68,68,0.055))] px-4 py-5 shadow-[0_28px_90px_rgba(0,0,0,0.32)] sm:px-6 lg:px-8"
+        className="relative overflow-hidden border-x border-y border-white/12 bg-[linear-gradient(120deg,rgba(255,255,255,0.06),rgba(255,255,255,0.018)_38%,rgba(239,68,68,0.07))] px-4 py-5 shadow-[0_32px_110px_rgba(0,0,0,0.38)] sm:px-6 lg:px-8"
       >
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-red-400/70 via-white/18 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/16 to-red-400/55" />
+        <div className="absolute left-0 top-0 h-9 w-16 border-b border-r border-red-300/40 bg-red-500/[0.035]" />
+        <div className="absolute bottom-0 right-0 h-9 w-16 border-l border-t border-red-300/40 bg-red-500/[0.035]" />
         <div className="absolute -right-10 top-[-2rem] select-none text-[10rem] font-black leading-none text-white/[0.02] sm:text-[15rem] lg:text-[21rem]">
           JF
         </div>
@@ -417,7 +438,7 @@ function ReachSurface({
           <span className="sm:text-right">update {formatElapsed(data.secondsSinceUpdate)}</span>
         </div>
 
-        <div className="relative grid gap-8 py-10 lg:grid-cols-[1.18fr_0.82fr] lg:items-stretch">
+        <div className="relative grid gap-8 py-10 lg:grid-cols-[1.32fr_0.68fr] lg:items-stretch">
           <div>
             <div className="mb-5 flex items-center gap-3 text-xs uppercase text-red-100/75">
               <span className="h-px w-14 bg-red-400/70" />
@@ -425,10 +446,10 @@ function ReachSurface({
               <span>alcance social em producao</span>
             </div>
             <p className="mb-4 text-sm uppercase text-white/40">views totais registradas</p>
-            <h1 className="max-w-5xl text-6xl font-black leading-[0.84] text-white sm:text-8xl lg:text-[9rem]">
+            <h1 className="max-w-5xl text-6xl font-black leading-[0.8] text-white sm:text-8xl lg:text-[9.6rem]">
               <LiveCounter value={data.summary.viewsTotal} duration={1.8} />
             </h1>
-            <div className="mt-6 max-w-3xl border-l border-red-300/45 pl-5">
+            <div className="mt-7 max-w-3xl border-l-2 border-red-300/55 pl-5">
               <p className="text-xl font-medium text-white/82 sm:text-2xl">Alcance real consolidado em contas conectadas.</p>
               <p className="mt-3 max-w-xl text-base leading-7 text-white/52">
                 Leitura publica de distribuicao, dominancia e atualizacoes reais dos canais sociais.
@@ -436,7 +457,8 @@ function ReachSurface({
             </div>
           </div>
 
-          <div className="grid content-between gap-5 border-l border-white/10 pl-6">
+          <div className="relative grid content-between gap-5 border-l-2 border-red-300/28 bg-black/[0.12] pl-6">
+            <div className="absolute -left-px bottom-[-2.5rem] h-12 w-px bg-red-300/70" />
             <BoardMetric label="canal dominante" value={leadingPlatform?.platform ?? "em atualizacao"} detail={`${formatPercentage(platformShare)} do alcance atual`} />
             <BoardMetric label="contas ativas" value={`${data.summary.accountsCovered}/${data.summary.accountsTotal}`} detail={`${formatPercentage(data.health.coverageRatio * 100)} de cobertura`} />
             <BoardMetric label="atualizado ha" value={formatElapsed(data.secondsSinceUpdate)} detail={data.summary.activeWindowLabel} />
@@ -444,7 +466,7 @@ function ReachSurface({
           </div>
         </div>
 
-        <div className="relative grid gap-8 border-t border-white/10 pt-7 lg:grid-cols-[1fr_1.15fr]">
+        <div className="relative grid gap-8 border-t-2 border-white/12 pt-7 lg:grid-cols-[1fr_1.15fr]">
           <div>
             <div className="mb-3 flex items-center justify-between text-xs uppercase text-white/38">
               <span>curva de alcance</span>
@@ -466,14 +488,37 @@ function ReachSurface({
           </div>
         </div>
 
-        <div className="relative mt-7 h-3 overflow-hidden bg-white/[0.055]">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${platformShare}%` }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
-            className="h-full bg-gradient-to-r from-red-600 via-red-300 to-white"
-          />
+        <div className="relative mt-7 h-6 overflow-hidden bg-white/[0.055]">
+          <div className="flex h-full">
+            {railAccounts.length > 0 ? (
+              railAccounts.map((account, index) => {
+                const width = getShare(account.views, data.summary.viewsTotal);
+                return (
+                  <motion.div
+                    key={account.id}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${width}%` }}
+                    transition={{ duration: 1.1, delay: index * 0.08, ease: "easeOut" }}
+                    className="h-full border-r border-[#030305]/70"
+                    style={{ backgroundColor: account.color }}
+                  />
+                );
+              })
+            ) : (
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${platformShare}%` }}
+                transition={{ duration: 1.2, ease: "easeOut" }}
+                className="h-full bg-gradient-to-r from-red-600 via-red-300 to-white"
+              />
+            )}
+          </div>
           <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,transparent_12%,rgba(3,3,5,0.62)_12.2%,transparent_12.4%,transparent_24%,rgba(3,3,5,0.62)_24.2%,transparent_24.4%,transparent_36%,rgba(3,3,5,0.62)_36.2%,transparent_36.4%,transparent_48%,rgba(3,3,5,0.62)_48.2%,transparent_48.4%,transparent_60%,rgba(3,3,5,0.62)_60.2%,transparent_60.4%,transparent_72%,rgba(3,3,5,0.62)_72.2%,transparent_72.4%,transparent_84%,rgba(3,3,5,0.62)_84.2%,transparent_84.4%)]" />
+        </div>
+        <div className="relative mt-3 flex flex-wrap gap-x-5 gap-y-2 text-[10px] uppercase text-white/38">
+          {railAccounts.slice(0, 4).map((account) => (
+            <span key={account.id}>{account.displayName} / {formatPercentage(getShare(account.views, data.summary.viewsTotal))}</span>
+          ))}
         </div>
       </motion.div>
     </section>
@@ -635,19 +680,37 @@ function AllocationLines({ data, platforms }: { data: DashboardPayload; platform
 
   return (
     <section id="dados" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mb-8 grid gap-4 border-b border-white/10 pb-5 lg:grid-cols-[0.8fr_1.2fr]">
-        <SectionTitle eyebrow="alcance por plataforma" title="Como as views estao distribuidas" />
-        {leadingPlatform ? (
-          <p className="max-w-2xl text-lg font-semibold leading-7 text-white/72">
-            {leadingPlatform.platform} concentra {formatPercentage(leadingShare)} do alcance atual, com {leadingPlatform.accountsCovered}/{leadingPlatform.accountsTotal} contas com dados ativos.
-          </p>
-        ) : null}
-      </div>
+      <div className="relative overflow-hidden border-y border-white/12 bg-white/[0.018] px-4 py-5 sm:px-6 lg:px-8">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-red-400/60 via-white/14 to-transparent" />
+        <div className="absolute -right-6 top-[-2rem] select-none text-[8rem] font-black leading-none text-white/[0.018] sm:text-[13rem]">
+          {formatPercentage(leadingShare)}
+        </div>
 
-      <div className="grid gap-5">
-        {platforms.map((platform, index) => (
-          <AllocationLine key={platform.id} platform={platform} total={data.summary.viewsTotal} index={index} />
-        ))}
+        <div className="relative grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-end">
+          <div>
+            <p className="text-xs uppercase text-white/35">platform concentration board</p>
+            <p className="mt-4 text-7xl font-black leading-none text-white sm:text-8xl lg:text-[8.5rem]">
+              {formatPercentage(leadingShare)}
+            </p>
+            <p className="mt-3 max-w-md text-xl font-semibold text-white/74">
+              {leadingPlatform?.platform ?? "Plataforma ativa"} concentra o alcance publico atual.
+            </p>
+          </div>
+
+          <div className="grid gap-5">
+            <div className="grid gap-4 border-l-2 border-red-300/30 pl-5 sm:grid-cols-3">
+              <ConcentrationMetric label="views consolidadas" value={formatCompact(data.summary.viewsTotal)} />
+              <ConcentrationMetric label="contas cobertas" value={`${leadingPlatform?.accountsCovered ?? data.summary.accountsCovered}/${leadingPlatform?.accountsTotal ?? data.summary.accountsTotal}`} />
+              <ConcentrationMetric label="estado" value={formatPublicStatus(leadingPlatform?.status ?? "connected")} />
+            </div>
+
+            <div className="grid gap-4">
+              {platforms.map((platform, index) => (
+                <AllocationLine key={platform.id} platform={platform} total={data.summary.viewsTotal} index={index} />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -657,18 +720,18 @@ function AllocationLine({ platform, total, index }: { platform: PlatformCardData
   const share = getShare(platform.views, total);
 
   return (
-    <div className="grid gap-3 border-b border-white/10 pb-5 lg:grid-cols-[44px_0.7fr_1fr_120px] lg:items-center">
-      <p className="text-xs text-white/35">{String(index + 1).padStart(2, "0")}</p>
+    <div className="grid gap-3 border-b border-white/12 pb-4 lg:grid-cols-[44px_0.72fr_1fr_120px] lg:items-center">
+      <p className="text-xs font-semibold text-white/35">{String(index + 1).padStart(2, "0")}</p>
       <div>
         <p className="text-2xl font-black text-white">{platform.platform}</p>
         <p className="mt-1 text-sm text-white/42">{platform.accountsCovered}/{platform.accountsTotal} contas com dados ativos</p>
       </div>
       <div>
-        <div className="mb-2 flex items-center justify-between text-xs text-white/42">
+        <div className="mb-2 flex items-center justify-between text-xs uppercase text-white/38">
           <span>{formatCompact(platform.views)} views</span>
           <span>{formatPublicStatus(platform.status)}</span>
         </div>
-        <div className="h-2 overflow-hidden bg-white/8">
+        <div className="h-5 overflow-hidden bg-white/8">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${share}%` }}
@@ -679,6 +742,15 @@ function AllocationLine({ platform, total, index }: { platform: PlatformCardData
         </div>
       </div>
       <p className="text-right text-3xl font-black text-white">{formatPercentage(share)}</p>
+    </div>
+  );
+}
+
+function ConcentrationMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-b border-white/10 pb-3">
+      <p className="text-[10px] uppercase text-white/35">{label}</p>
+      <p className="mt-2 text-2xl font-black text-white">{value}</p>
     </div>
   );
 }
