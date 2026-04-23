@@ -66,9 +66,10 @@ await registerAdminRoutes(app);
 
 function renderLegalPage(kind: "terms" | "privacy") {
   const isTerms = kind === "terms";
-  const title = isTerms ? "Termos de Servico" : "Politica de Privacidade";
+  const title = isTerms ? "Termos de Servico do JFclipes" : "Politica de Privacidade do JFclipes";
   const body = isTerms
     ? `
+      <p>Estes Termos de Servico se aplicam ao aplicativo JFclipes e ao site publico JF Portfolio, disponivel em jfclipes.pro.</p>
       <h2>1. Sobre o JF Portfolio</h2>
       <p>O JF Portfolio e uma vitrine publica de alcance em redes sociais. O site apresenta metricas, contas conectadas, atualizacoes e historico de visualizacoes de canais autorizados.</p>
       <h2>2. Uso do site</h2>
@@ -85,6 +86,7 @@ function renderLegalPage(kind: "terms" | "privacy") {
       <p>Para duvidas sobre estes termos, acesse a pagina inicial em <a href="/">jfclipes.pro</a> e utilize o canal de contato disponivel.</p>
     `
     : `
+      <p>Esta Politica de Privacidade descreve como o aplicativo JFclipes e o site publico JF Portfolio, disponivel em jfclipes.pro, processam informacoes.</p>
       <h2>1. Informacoes que coletamos</h2>
       <p>O JF Portfolio pode processar dados necessarios para exibir metricas de contas autorizadas, como nome do canal ou conta, identificador publico, plataforma, total de visualizacoes, horarios de atualizacao e eventos de sincronizacao.</p>
       <p>Tambem podemos processar informacoes tecnicas basicas do acesso ao site, como endereco IP, navegador, dispositivo, registros de erro e dados de seguranca, quando esses dados forem gerados pela infraestrutura de hospedagem ou pelo backend.</p>

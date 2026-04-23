@@ -438,15 +438,15 @@ function ReachSurface({
           <span className="sm:text-right">update {formatElapsed(data.secondsSinceUpdate)}</span>
         </div>
 
-        <div className="relative grid gap-8 py-10 lg:grid-cols-[1.32fr_0.68fr] lg:items-stretch">
-          <div>
+        <div className="relative grid gap-8 py-10 lg:grid-cols-[minmax(0,1.32fr)_minmax(300px,0.68fr)] lg:items-stretch">
+          <div className="min-w-0">
             <div className="mb-5 flex items-center gap-3 text-xs uppercase text-red-100/75">
               <span className="h-px w-14 bg-red-400/70" />
               <Satellite className="h-3.5 w-3.5" />
               <span>alcance social em producao</span>
             </div>
             <p className="mb-4 text-sm uppercase text-white/40">views totais registradas</p>
-            <h1 className="max-w-5xl text-6xl font-black leading-[0.8] text-white sm:text-8xl lg:text-[9.6rem]">
+            <h1 className="max-w-5xl text-6xl font-black leading-[0.8] text-white tabular-nums sm:text-8xl lg:text-[9.6rem]">
               <LiveCounter value={data.summary.viewsTotal} duration={1.8} />
             </h1>
             <div className="mt-7 max-w-3xl border-l-2 border-red-300/55 pl-5">
@@ -457,7 +457,7 @@ function ReachSurface({
             </div>
           </div>
 
-          <div className="relative grid content-between gap-5 border-l-2 border-red-300/28 bg-black/[0.12] pl-6">
+          <div className="relative grid min-w-0 content-between gap-5 border-l-2 border-red-300/28 bg-black/[0.12] pl-6">
             <div className="absolute -left-px bottom-[-2.5rem] h-12 w-px bg-red-300/70" />
             <BoardMetric label="canal dominante" value={leadingPlatform?.platform ?? "em atualizacao"} detail={`${formatPercentage(platformShare)} do alcance atual`} />
             <BoardMetric label="contas ativas" value={`${data.summary.accountsCovered}/${data.summary.accountsTotal}`} detail={`${formatPercentage(data.health.coverageRatio * 100)} de cobertura`} />
@@ -527,12 +527,12 @@ function ReachSurface({
 
 function BoardMetric({ label, value, detail }: { label: string; value: string; detail: string }) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4 border-b border-white/10 pb-4">
-      <div>
+    <div className="grid grid-cols-[minmax(0,1fr)_minmax(7rem,auto)] items-end gap-4 border-b border-white/10 pb-4">
+      <div className="min-w-0">
         <p className="text-[10px] uppercase text-white/35">{label}</p>
-        <p className="mt-1 text-sm text-white/48">{detail}</p>
+        <p className="mt-1 truncate text-sm text-white/48">{detail}</p>
       </div>
-      <p className="text-right text-2xl font-black text-white">{value}</p>
+      <p className="min-w-28 text-right text-2xl font-black text-white tabular-nums">{value}</p>
     </div>
   );
 }
@@ -1172,6 +1172,13 @@ function LegalSection({ title, children }: { title: string; children: React.Reac
 function TermsContent() {
   return (
     <>
+      <LegalSection title="Aplicacao destes termos ao JFclipes">
+        <p>
+          Estes Termos de Servico se aplicam ao aplicativo JFclipes e ao site publico JF Portfolio,
+          disponivel em <a className="text-white underline" href="/">jfclipes.pro</a>.
+        </p>
+      </LegalSection>
+
       <LegalSection title="1. Sobre o JF Portfolio">
         <p>
           O JF Portfolio e uma vitrine publica de alcance em redes sociais. O site apresenta metricas,
@@ -1231,6 +1238,13 @@ function TermsContent() {
 function PrivacyContent() {
   return (
     <>
+      <LegalSection title="Aplicacao desta politica ao JFclipes">
+        <p>
+          Esta Politica de Privacidade descreve como o aplicativo JFclipes e o site publico JF Portfolio,
+          disponivel em <a className="text-white underline" href="/">jfclipes.pro</a>, processam informacoes.
+        </p>
+      </LegalSection>
+
       <LegalSection title="1. Informacoes que coletamos">
         <p>
           O JF Portfolio pode processar dados necessarios para exibir metricas de contas autorizadas, como
@@ -1313,7 +1327,7 @@ function LegalPage({ type }: { type: "terms" | "privacy" }) {
         <article className="rounded-[2rem] bg-white/[0.055] p-6 shadow-2xl shadow-black/25 backdrop-blur-2xl sm:p-8">
           <p className="text-sm uppercase text-white/42">JF Portfolio</p>
           <h1 className="mt-3 text-4xl font-black text-white sm:text-5xl">
-            {isTerms ? "Termos de Servico" : "Politica de Privacidade"}
+            {isTerms ? "Termos de Servico do JFclipes" : "Politica de Privacidade do JFclipes"}
           </h1>
           <p className="mt-3 text-sm text-white/48">Ultima atualizacao: 23 de abril de 2026</p>
           {isTerms ? <TermsContent /> : <PrivacyContent />}
