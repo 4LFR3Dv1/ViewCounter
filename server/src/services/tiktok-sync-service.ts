@@ -3,8 +3,8 @@ import {
   persistTikTokSyncResult,
   recordSyncJob,
   updateAccountStatus,
-} from "../repositories/dashboard-repository";
-import type { PersistedAccountConnection, PersistedSyncJob } from "../types/store";
+} from "../repositories/dashboard-repository.js";
+import type { PersistedAccountConnection, PersistedSyncJob } from "../types/store.js";
 
 interface TikTokTokenResponse {
   access_token: string;
@@ -362,7 +362,7 @@ export async function syncAllTikTokConnections(trigger: SyncTrigger = "manual") 
 export async function syncTikTokConnectionById(connectionId: string, trigger: SyncTrigger = "manual") {
   const startedAt = new Date().toISOString();
   const connections = await listTikTokConnections();
-  const connection = connections.find((item) => item.id === connectionId);
+  const connection = connections.find((item: PersistedAccountConnection) => item.id === connectionId);
 
   if (!connection) {
     throw new Error(`Conexao TikTok nao encontrada: ${connectionId}`);

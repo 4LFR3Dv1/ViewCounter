@@ -1,4 +1,4 @@
-import { syncAllYouTubeConnections } from "../services/youtube-sync-service";
+import { syncAllYouTubeConnections } from "../services/youtube-sync-service.js";
 
 function getSyncIntervalMs() {
   const minutes = Number(process.env.YOUTUBE_SYNC_INTERVAL_MINUTES ?? 0);

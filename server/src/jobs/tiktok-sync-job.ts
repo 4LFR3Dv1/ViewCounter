@@ -1,4 +1,4 @@
-import { syncAllTikTokConnections } from "../services/tiktok-sync-service";
+import { syncAllTikTokConnections } from "../services/tiktok-sync-service.js";
 
 function getSyncIntervalMs() {
   const minutes = Number(process.env.TIKTOK_SYNC_INTERVAL_MINUTES ?? 0);

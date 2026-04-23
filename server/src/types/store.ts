@@ -1,4 +1,4 @@
-import type { ConnectionStatus, PlatformSlug } from "./dashboard";
+import type { ConnectionStatus, PlatformSlug } from "./dashboard.js";
 
 export interface PersistedPlatform {
   id: string;

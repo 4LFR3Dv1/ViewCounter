@@ -8,8 +8,8 @@ import type {
   DashboardSummary,
   PlatformCardData,
   PlatformSlug,
-} from "../types/dashboard";
-import type { DashboardStore, PersistedAccount, PersistedMetricSnapshot, PersistedPlatform } from "../types/store";
+} from "../types/dashboard.js";
+import type { DashboardStore, PersistedAccount, PersistedMetricSnapshot, PersistedPlatform } from "../types/store.js";
 
 type SnapshotMap = Map<string, PersistedMetricSnapshot[]>;
 
@@ -137,7 +137,7 @@ function buildPlatformCards(
     });
 
     const current = totals.reduce((sum, total) => sum + total, 0);
-    const previous = previousTotals.reduce((sum, total) => sum + (total ?? 0), 0);
+    const previous = previousTotals.reduce<number>((sum, total) => sum + (total ?? 0), 0);
 
     return {
       id: platform.id,

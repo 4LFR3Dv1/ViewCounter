@@ -1,5 +1,5 @@
-import { getPostgresPool } from "../db/postgres";
-import type { ConnectionStatus, PlatformSlug } from "../types/dashboard";
+import { getPostgresPool } from "../db/postgres.js";
+import type { ConnectionStatus, PlatformSlug } from "../types/dashboard.js";
 import type {
   DashboardStore,
   PersistedAccount,
@@ -9,7 +9,7 @@ import type {
   PersistedMetricSnapshot,
   PersistedPlatform,
   PersistedSyncJob,
-} from "../types/store";
+} from "../types/store.js";
 
 type SyncPlatform = Extract<PlatformSlug, "youtube" | "tiktok">;
 

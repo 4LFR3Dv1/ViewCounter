@@ -3,12 +3,12 @@ import {
   buildTikTokStartPayload,
   getTikTokFrontendAppUrl,
   handleTikTokOAuthCallback,
-} from "../services/tiktok-auth-service";
+} from "../services/tiktok-auth-service.js";
 import {
   buildYouTubeStartPayload,
   getFrontendAppUrl,
   handleYouTubeOAuthCallback,
-} from "../services/youtube-auth-service";
+} from "../services/youtube-auth-service.js";
 
 const YOUTUBE_STATE_COOKIE = "yt_oauth_state";
 const YOUTUBE_RETURN_TO_COOKIE = "yt_oauth_return_to";

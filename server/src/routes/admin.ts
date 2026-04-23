@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
-import { getAdminConnectionsOverview, getAdminSyncJobs } from "../services/admin-overview-service";
-import { syncAllTikTokConnections, syncTikTokConnectionById } from "../services/tiktok-sync-service";
-import { syncAllYouTubeConnections, syncYouTubeConnectionById } from "../services/youtube-sync-service";
+import { getAdminConnectionsOverview, getAdminSyncJobs } from "../services/admin-overview-service.js";
+import { syncAllTikTokConnections, syncTikTokConnectionById } from "../services/tiktok-sync-service.js";
+import { syncAllYouTubeConnections, syncYouTubeConnectionById } from "../services/youtube-sync-service.js";
 
 export async function registerAdminRoutes(app: FastifyInstance) {
   app.get("/api/admin/connections", async () => {

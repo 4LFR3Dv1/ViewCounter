@@ -1,9 +1,9 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createSeedDashboardStore } from "../data/seed-dashboard-store";
-import { loadDashboardStore } from "../repositories/dashboard-store-repository";
-import type { DashboardStore } from "../types/store";
+import { createSeedDashboardStore } from "../data/seed-dashboard-store.js";
+import { loadDashboardStore } from "../repositories/dashboard-store-repository.js";
+import type { DashboardStore } from "../types/store.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

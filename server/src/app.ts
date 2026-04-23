@@ -1,14 +1,14 @@
 import Fastify from "fastify";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
-import { startTikTokSyncScheduler } from "./jobs/tiktok-sync-job";
-import { startYouTubeSyncScheduler } from "./jobs/youtube-sync-job";
-import { registerAdminRoutes } from "./routes/admin";
-import { registerAuthRoutes } from "./routes/auth";
-import { registerDashboardRoutes } from "./routes/dashboard";
-import { getActiveDataProvider } from "./repositories/dashboard-repository";
-import { getDashboardPayload } from "./services/dashboard-service";
-import { pingPostgres } from "./db/postgres";
+import { startTikTokSyncScheduler } from "./jobs/tiktok-sync-job.js";
+import { startYouTubeSyncScheduler } from "./jobs/youtube-sync-job.js";
+import { registerAdminRoutes } from "./routes/admin.js";
+import { registerAuthRoutes } from "./routes/auth.js";
+import { registerDashboardRoutes } from "./routes/dashboard.js";
+import { getActiveDataProvider } from "./repositories/dashboard-repository.js";
+import { getDashboardPayload } from "./services/dashboard-service.js";
+import { pingPostgres } from "./db/postgres.js";
 
 const app = Fastify({
   logger: true,

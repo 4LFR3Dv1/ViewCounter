@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import { upsertYouTubeConnection } from "../repositories/dashboard-repository";
+import { upsertYouTubeConnection } from "../repositories/dashboard-repository.js";
 
 const YOUTUBE_OAUTH_SCOPE = [
   "https://www.googleapis.com/auth/yt-analytics.readonly",

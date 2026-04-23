@@ -3,8 +3,8 @@ import {
   persistYouTubeSyncResult,
   recordSyncJob,
   updateAccountStatus,
-} from "../repositories/dashboard-repository";
-import type { PersistedAccountConnection, PersistedSyncJob } from "../types/store";
+} from "../repositories/dashboard-repository.js";
+import type { PersistedAccountConnection, PersistedSyncJob } from "../types/store.js";
 
 interface RefreshTokenResponse {
   access_token: string;
@@ -245,7 +245,7 @@ export async function syncAllYouTubeConnections(trigger: SyncTrigger = "manual")
 export async function syncYouTubeConnectionById(connectionId: string, trigger: SyncTrigger = "manual") {
   const startedAt = new Date().toISOString();
   const connections = await listYouTubeConnections();
-  const connection = connections.find((item) => item.id === connectionId);
+  const connection = connections.find((item: PersistedAccountConnection) => item.id === connectionId);
 
   if (!connection) {
     throw new Error(`Conexao YouTube nao encontrada: ${connectionId}`);

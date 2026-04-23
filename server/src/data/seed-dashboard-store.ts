@@ -1,4 +1,4 @@
-import type { DashboardStore, PersistedActivityEvent, PersistedCaseStudy, PersistedMetricSnapshot } from "../types/store";
+import type { DashboardStore, PersistedActivityEvent, PersistedCaseStudy, PersistedMetricSnapshot } from "../types/store.js";
 
 function daysAgo(days: number, hour = 12) {
   const date = new Date();

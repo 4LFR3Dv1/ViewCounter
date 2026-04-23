@@ -8,9 +8,11 @@
     "dev:client": "vite",
     "dev:server": "tsx watch server/src/app.ts",
     "db:generate-seed-sql": "tsx server/src/db/generate-store-seed-sql.ts",
-    "build": "tsc -b && vite build",
+    "build": "npm run build:client",
+    "build:client": "tsc -b && vite build",
+    "build:server": "tsc -p tsconfig.server.json",
     "preview": "vite preview",
-    "start:server": "tsx server/src/app.ts"
+    "start:server": "node build/server/app.js"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",

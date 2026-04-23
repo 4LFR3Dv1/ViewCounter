@@ -1,7 +1,7 @@
-import { getActiveDataProvider } from "../repositories/dashboard-repository";
-import { listSyncJobs, loadDashboardStore } from "../repositories/dashboard-repository";
-import type { ConnectionStatus, PlatformSlug } from "../types/dashboard";
-import type { PersistedSyncJob } from "../types/store";
+import { getActiveDataProvider } from "../repositories/dashboard-repository.js";
+import { listSyncJobs, loadDashboardStore } from "../repositories/dashboard-repository.js";
+import type { ConnectionStatus, PlatformSlug } from "../types/dashboard.js";
+import type { PersistedSyncJob } from "../types/store.js";
 
 export interface AdminConnectionOverviewItem {
   id: string;

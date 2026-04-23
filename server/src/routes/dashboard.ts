@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
-import { getDashboardPayload } from "../services/dashboard-service";
-import { appendManualSnapshot, updateAccountStatus } from "../repositories/dashboard-repository";
-import type { ConnectionStatus } from "../types/dashboard";
+import { getDashboardPayload } from "../services/dashboard-service.js";
+import { appendManualSnapshot, updateAccountStatus } from "../repositories/dashboard-repository.js";
+import type { ConnectionStatus } from "../types/dashboard.js";
 
 export async function registerDashboardRoutes(app: FastifyInstance) {
   app.get("/api/dashboard", async () => getDashboardPayload());

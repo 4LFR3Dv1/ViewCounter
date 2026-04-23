@@ -1,5 +1,5 @@
-import type { ConnectionStatus } from "../types/dashboard";
-import type { DashboardStore, PersistedSyncJob } from "../types/store";
+import type { ConnectionStatus } from "../types/dashboard.js";
+import type { DashboardStore, PersistedSyncJob } from "../types/store.js";
 import {
   appendManualSnapshot as appendJsonManualSnapshot,
   listSyncJobs as listJsonSyncJobs,
@@ -12,7 +12,7 @@ import {
   updateAccountStatus as updateJsonAccountStatus,
   upsertTikTokConnection as upsertJsonTikTokConnection,
   upsertYouTubeConnection as upsertJsonYouTubeConnection,
-} from "./dashboard-store-repository";
+} from "./dashboard-store-repository.js";
 import {
   appendManualSnapshot as appendPostgresManualSnapshot,
   listSyncJobs as listPostgresSyncJobs,
@@ -25,7 +25,7 @@ import {
   updateAccountStatus as updatePostgresAccountStatus,
   upsertTikTokConnection as upsertPostgresTikTokConnection,
   upsertYouTubeConnection as upsertPostgresYouTubeConnection,
-} from "./postgres-dashboard-repository";
+} from "./postgres-dashboard-repository.js";
 
 export type DataProvider = "json" | "postgres";
 

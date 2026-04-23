@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
-import { upsertTikTokConnection } from "../repositories/dashboard-repository";
-import { getFrontendAppUrl } from "./youtube-auth-service";
-import { fetchTikTokAccountSnapshot } from "./tiktok-sync-service";
+import { upsertTikTokConnection } from "../repositories/dashboard-repository.js";
+import { getFrontendAppUrl } from "./youtube-auth-service.js";
+import { fetchTikTokAccountSnapshot } from "./tiktok-sync-service.js";
 
 const TIKTOK_OAUTH_SCOPE = ["user.info.basic", "video.list"];
 

@@ -1,14 +1,14 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createSeedDashboardStore } from "../data/seed-dashboard-store";
-import type { ConnectionStatus, PlatformSlug } from "../types/dashboard";
+import { createSeedDashboardStore } from "../data/seed-dashboard-store.js";
+import type { ConnectionStatus, PlatformSlug } from "../types/dashboard.js";
 import type {
   DashboardStore,
   PersistedAccountConnection,
   PersistedMetricSnapshot,
   PersistedSyncJob,
-} from "../types/store";
+} from "../types/store.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
