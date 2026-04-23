@@ -446,7 +446,7 @@ function ReachSurface({
               <span>alcance social em producao</span>
             </div>
             <p className="mb-4 text-sm uppercase text-white/40">views totais registradas</p>
-            <h1 className="max-w-5xl text-6xl font-black leading-[0.8] text-white tabular-nums sm:text-8xl lg:text-[9.6rem]">
+            <h1 className="max-w-full text-5xl font-black leading-[0.82] text-white tabular-nums sm:text-7xl lg:text-[7.75rem] xl:text-[8.5rem]">
               <LiveCounter value={data.summary.viewsTotal} duration={1.8} />
             </h1>
             <div className="mt-7 max-w-3xl border-l-2 border-red-300/55 pl-5">

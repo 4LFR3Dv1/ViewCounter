@@ -18,38 +18,54 @@ export function useDashboard() {
 
   useEffect(() => {
     let isMounted = true;
+    let stream: EventSource | null = null;
 
-    fetchDashboard()
-      .then((data) => {
+    const refreshDashboard = async () => {
+      try {
+        const data = await fetchDashboard();
         if (!isMounted) return;
         setState({ data, isLoading: false, error: null });
-      })
-      .catch((error: Error) => {
+      } catch (error) {
         if (!isMounted) return;
-        setState({ data: null, isLoading: false, error: error.message });
+        const message = error instanceof Error ? error.message : "Falha ao atualizar dashboard.";
+        setState((current) => ({
+          data: current.data,
+          isLoading: false,
+          error: current.data ? current.error : message,
+        }));
+      }
+    };
+
+    const connectStream = () => {
+      stream = createDashboardStream();
+
+      stream.addEventListener("dashboard", (event) => {
+        if (!isMounted) return;
+
+        const nextData = JSON.parse((event as MessageEvent<string>).data) as DashboardPayload;
+        setState({ data: nextData, isLoading: false, error: null });
       });
 
-    const stream = createDashboardStream();
-
-    stream.addEventListener("dashboard", (event) => {
-      if (!isMounted) return;
-
-      const nextData = JSON.parse((event as MessageEvent<string>).data) as DashboardPayload;
-      setState({ data: nextData, isLoading: false, error: null });
-    });
-
-    stream.onerror = () => {
-      if (!isMounted) return;
-      setState((current) => ({
-        ...current,
-        error: current.data ? null : "Nao foi possivel conectar ao stream do dashboard.",
-      }));
-      stream.close();
+      stream.onerror = () => {
+        if (!isMounted) return;
+        setState((current) => ({
+          ...current,
+          error: current.data ? null : "Nao foi possivel conectar ao stream do dashboard.",
+        }));
+      };
     };
+
+    void refreshDashboard();
+    connectStream();
+
+    const pollingInterval = setInterval(() => {
+      void refreshDashboard();
+    }, 30_000);
 
     return () => {
       isMounted = false;
-      stream.close();
+      clearInterval(pollingInterval);
+      stream?.close();
     };
   }, []);
 
