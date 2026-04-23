@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   AlertCircle,
@@ -113,8 +113,8 @@ function FrameOverlay({ data }: { data: DashboardPayload & { secondsSinceUpdate:
       <div className="absolute -right-px -top-px h-9 w-9 border-r border-t border-white/45" />
       <div className="absolute -bottom-px -left-px h-9 w-9 border-b border-l border-white/45" />
       <div className="absolute -bottom-px -right-px h-9 w-9 border-b border-r border-red-400" />
-      <div className="absolute left-4 top-3 text-[10px] uppercase text-white/35">JF runtime frame</div>
-      <div className="absolute right-4 top-3 text-[10px] uppercase text-white/35">sync {data.secondsSinceUpdate}s</div>
+      <div className="absolute left-4 top-3 text-[10px] uppercase text-white/35">JF portfolio</div>
+      <div className="absolute right-4 top-3 text-[10px] uppercase text-white/35">atualizado {data.secondsSinceUpdate}s</div>
       <div className="absolute bottom-3 left-4 text-[10px] uppercase text-white/35">{data.summary.activeWindowLabel}</div>
       <div className="absolute bottom-3 right-4 text-[10px] uppercase text-white/35">coverage {formatPercentage(data.health.coverageRatio * 100)}</div>
     </div>
@@ -145,15 +145,15 @@ function TopBar({ data }: { data: DashboardPayload & { secondsSinceUpdate: numbe
             JF
           </div>
           <div>
-            <p className="text-sm font-semibold leading-tight text-white">Signal Portfolio</p>
-            <p className="text-xs text-white/45">live performance frame</p>
+            <p className="text-sm font-semibold leading-tight text-white">JF Portfolio</p>
+            <p className="text-xs text-white/45">alcance real em redes sociais</p>
           </div>
         </a>
 
         <nav className="hidden items-center gap-6 text-sm text-white/58 md:flex">
-          <a className="transition-colors hover:text-white" href="#dados">Index</a>
-          <a className="transition-colors hover:text-white" href="#contas">Obras</a>
-          <a className="transition-colors hover:text-white" href="#atividade">Sinais</a>
+          <a className="transition-colors hover:text-white" href="#dados">Alcance</a>
+          <a className="transition-colors hover:text-white" href="#contas">Canais</a>
+          <a className="transition-colors hover:text-white" href="#atividade">Atualizacoes</a>
           {data.cases.length > 0 ? <a className="transition-colors hover:text-white" href="#cases">Cases</a> : null}
         </nav>
 
@@ -207,10 +207,10 @@ function Hero({
             <div>
               <div className="mb-9 inline-flex items-center gap-2 rounded-full border border-red-400/25 bg-red-500/10 px-3 py-1.5 text-xs uppercase text-red-100">
                 <Satellite className="h-3.5 w-3.5" />
-                portfolio vivo
+                portfolio de alcance
               </div>
 
-              <p className="mb-4 text-sm uppercase text-white/42">indice principal</p>
+              <p className="mb-4 text-sm uppercase text-white/42">views totais registradas</p>
               <h1 className="max-w-5xl text-5xl font-black leading-none text-white sm:text-7xl lg:text-8xl">
                 <LiveCounter value={data.summary.viewsTotal} duration={1.8} />
               </h1>
@@ -218,14 +218,14 @@ function Hero({
                 views registradas em contas conectadas.
               </p>
               <p className="mt-5 max-w-xl text-base leading-7 text-white/52">
-                Uma superficie viva para canais, cortes e presenca digital. A leitura muda conforme novas contas conectadas passam a enviar dados reais.
+                Um portfolio comercial de canais e conteudos medido por dados reais. Cada atualizacao mostra o alcance ativo das contas conectadas.
               </p>
             </div>
 
             <div className="mt-9 grid gap-3 sm:grid-cols-3">
-              <SignalStat label="janela" value={data.summary.activeWindowLabel} />
-              <SignalStat label="variacao" value={deltaLabel} />
-              <SignalStat label="sync" value={`${data.secondsSinceUpdate}s`} />
+              <SignalStat label="periodo analisado" value={data.summary.activeWindowLabel} />
+              {data.summary.deltaPercentage !== 0 ? <SignalStat label="variacao" value={deltaLabel} /> : null}
+              <SignalStat label="atualizado ha" value={`${data.secondsSinceUpdate}s`} />
             </div>
           </div>
         </div>
@@ -251,13 +251,13 @@ function Hero({
             </div>
 
             <div>
-              <p className="text-sm uppercase text-white/38">plataforma lider</p>
+              <p className="text-sm uppercase text-white/38">canal dominante</p>
               <p className="mt-3 text-5xl font-black leading-none text-white sm:text-6xl">
                 {leadingPlatform?.platform ?? "Ativo"}
               </p>
               <div className="mt-6">
                 <div className="mb-2 flex items-center justify-between text-xs text-white/42">
-                  <span>participacao no total</span>
+                  <span>peso no alcance total</span>
                   <span>{formatPercentage(platformShare)}</span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-white/8">
@@ -274,7 +274,7 @@ function Hero({
 
           <div className="mt-10 grid gap-3">
             <div className="grid grid-cols-2 gap-3">
-              <SignalStat label="contas" value={`${leadingPlatform?.accountsCovered ?? data.summary.accountsCovered}/${leadingPlatform?.accountsTotal ?? data.summary.accountsTotal}`} />
+              <SignalStat label="contas ativas" value={`${leadingPlatform?.accountsCovered ?? data.summary.accountsCovered}/${leadingPlatform?.accountsTotal ?? data.summary.accountsTotal}`} />
               <SignalStat label="cobertura" value={formatPercentage(data.health.coverageRatio * 100)} />
             </div>
             {leadingAccounts.slice(0, 2).map((account) => (
@@ -315,20 +315,19 @@ function AccountSignal({ account, total }: { account: AccountCardData; total: nu
   );
 }
 
-function ActivityStrip({ data }: { data: DashboardPayload & { secondsSinceUpdate: number } }) {
-  const latestEvent = data.events[0];
+function ActivityStrip({ data, viewsDelta }: { data: DashboardPayload & { secondsSinceUpdate: number }; viewsDelta: number }) {
+  if (viewsDelta <= 0) return null;
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-      <div className="grid gap-3 rounded-[1.5rem] bg-white/[0.055] p-3 shadow-2xl shadow-black/20 backdrop-blur-2xl md:grid-cols-[1.3fr_0.7fr_0.7fr_0.7fr]">
+      <div className="grid gap-3 rounded-[1.5rem] bg-white/[0.055] p-3 shadow-2xl shadow-black/20 backdrop-blur-2xl md:grid-cols-[1.4fr_0.8fr_0.8fr]">
         <LivePill
           icon={<Activity className="h-4 w-4" />}
-          label="ultimo sinal"
-          value={latestEvent ? formatPublicEventText(latestEvent.text, latestEvent.platform) : data.summary.activeWindowLabel}
-          accent={latestEvent?.color ?? "#ef4444"}
+          label="views nesta atualizacao"
+          value={`+${formatFull(viewsDelta)} views`}
+          accent="#ef4444"
         />
-        <LivePill icon={<Clock3 className="h-4 w-4" />} label="sync" value={`${data.secondsSinceUpdate}s`} accent="#f87171" />
-        <LivePill label="contas" value={`${data.summary.accountsCovered}/${data.summary.accountsTotal}`} accent="#ffffff" />
+        <LivePill icon={<Clock3 className="h-4 w-4" />} label="atualizado ha" value={`${data.secondsSinceUpdate}s`} accent="#f87171" />
         <LivePill label="cobertura" value={formatPercentage(data.health.coverageRatio * 100)} accent="#f87171" />
       </div>
     </section>
@@ -353,7 +352,7 @@ function DataSection({ data, platforms }: { data: DashboardPayload; platforms: P
   return (
     <section id="dados" className="mx-auto grid max-w-7xl gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[0.88fr_1.12fr] lg:px-8">
       <div className="rounded-[2rem] bg-white/[0.05] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl">
-        <SectionTitle eyebrow="index" title="Distribuicao ativa" />
+        <SectionTitle eyebrow="alcance por plataforma" title="Como as views estao distribuidas" />
         <div className="mt-5 grid gap-3">
           {platforms.map((platform) => (
             <PlatformRow key={platform.id} platform={platform} total={data.summary.viewsTotal} />
@@ -391,7 +390,7 @@ function PlatformRow({ platform, total }: { platform: PlatformCardData; total: n
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: platform.color }} />
             <p className="font-semibold text-white">{platform.platform}</p>
           </div>
-          <p className="text-xs text-white/42">{platform.accountsCovered}/{platform.accountsTotal} contas cobertas</p>
+          <p className="text-xs text-white/42">{platform.accountsCovered}/{platform.accountsTotal} contas com dados ativos</p>
         </div>
         <div className="text-right">
           <p className="text-sm uppercase text-white/45">{formatPublicStatus(platform.status)}</p>
@@ -419,9 +418,9 @@ function SnapshotCard({ data }: { data: DashboardPayload }) {
       <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-red-300/60 to-transparent" />
       <div className="flex min-h-[360px] flex-col justify-between">
         <div>
-          <SectionTitle eyebrow={data.summary.activeWindowLabel} title="Registro inicial" />
+          <SectionTitle eyebrow={data.summary.activeWindowLabel} title="Primeiro snapshot registrado" />
           <p className="mt-4 max-w-md text-sm leading-6 text-white/48">
-            A curva aparece automaticamente quando a serie trouxer mais pontos no historico.
+            A evolucao aparece conforme novos snapshots forem registrados.
           </p>
         </div>
 
@@ -450,7 +449,7 @@ function SnapshotCard({ data }: { data: DashboardPayload }) {
 function AccountsSection({ accounts }: { accounts: AccountCardData[] }) {
   return (
     <section id="contas" className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-      <SectionTitle eyebrow="obras conectadas" title={`${accounts.length} pecas do portfolio`} />
+      <SectionTitle eyebrow="canais em destaque" title={`${accounts.length} contas com dados ativos`} />
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         {accounts.map((account, index) => (
           <AccountCard key={account.id} account={account} index={index} />
@@ -501,7 +500,7 @@ function EventsSection({ data }: { data: DashboardPayload & { secondsSinceUpdate
   return (
     <section id="atividade" className="mx-auto grid max-w-7xl gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[0.65fr_1.35fr] lg:px-8">
       <div className="rounded-[2rem] bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl">
-        <SectionTitle eyebrow="sinais" title="Timeline viva" />
+        <SectionTitle eyebrow="atualizacoes" title="Movimento recente" />
         <div className="mt-8 flex items-center gap-3 text-sm text-white/48">
           <Clock3 className="h-4 w-4 text-red-300" />
           <span>atualizado ha {data.secondsSinceUpdate}s</span>
@@ -578,10 +577,10 @@ function ContactSection() {
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase text-black/45">contato</p>
-            <h2 className="mt-2 text-3xl font-black">Vamos conversar sobre o portfolio?</h2>
+            <h2 className="mt-2 text-3xl font-black">Quer ver esse alcance aplicado ao seu projeto?</h2>
           </div>
           <div className="rounded-xl border border-black/10 px-5 py-3 text-sm font-semibold text-black/62">
-            Portfolio em movimento
+            Dados reais, atualizados em producao
           </div>
         </div>
       </div>
@@ -600,11 +599,31 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
 
 export default function App() {
   const { data, isLoading, error } = useDashboard();
+  const previousViewsTotalRef = useRef<number | null>(null);
+  const previousUpdatedAtRef = useRef<string | null>(null);
+  const [lastViewsDelta, setLastViewsDelta] = useState(0);
   const showOpsPanel = useMemo(() => {
     if (typeof window === "undefined") return false;
     const searchParams = new URLSearchParams(window.location.search);
     return searchParams.get("admin") === "1" || window.location.hash === "#ops";
   }, []);
+
+  useEffect(() => {
+    const currentViewsTotal = data?.summary.viewsTotal;
+    const currentUpdatedAt = data?.summary.lastUpdatedAt;
+    if (typeof currentViewsTotal !== "number") return;
+
+    const previousViewsTotal = previousViewsTotalRef.current;
+    const previousUpdatedAt = previousUpdatedAtRef.current;
+    if (previousViewsTotal !== null && currentViewsTotal > previousViewsTotal) {
+      setLastViewsDelta(currentViewsTotal - previousViewsTotal);
+    } else if (previousUpdatedAt !== null && currentUpdatedAt !== previousUpdatedAt) {
+      setLastViewsDelta(0);
+    }
+
+    previousViewsTotalRef.current = currentViewsTotal;
+    previousUpdatedAtRef.current = currentUpdatedAt ?? null;
+  }, [data?.summary.viewsTotal, data?.summary.lastUpdatedAt]);
 
   if (isLoading && !data) {
     return (
@@ -643,7 +662,7 @@ export default function App() {
 
       <main>
         <Hero data={data} platforms={publicPlatforms} accounts={data.accounts} />
-        <ActivityStrip data={data} />
+        <ActivityStrip data={data} viewsDelta={lastViewsDelta} />
         {publicPlatforms.length > 0 ? <DataSection data={data} platforms={publicPlatforms} /> : null}
         {data.accounts.length > 0 ? <AccountsSection accounts={data.accounts} /> : null}
         <EventsSection data={data} />
