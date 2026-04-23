@@ -1,5 +1,11 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
+  "nixpacks": {
+    "providers": ["node"],
+    "variables": {
+      "NIXPACKS_NODE_VERSION": "20"
+    }
+  },
   "build": {
     "builder": "NIXPACKS",
     "buildCommand": "npm run build:server"
