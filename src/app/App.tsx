@@ -155,6 +155,8 @@ function TopBar({ data }: { data: DashboardPayload & { secondsSinceUpdate: numbe
           <a className="transition-colors hover:text-white" href="#contas">Canais</a>
           <a className="transition-colors hover:text-white" href="#atividade">Atualizacoes</a>
           {data.cases.length > 0 ? <a className="transition-colors hover:text-white" href="#cases">Cases</a> : null}
+          <a className="transition-colors hover:text-white" href="/terms">Termos</a>
+          <a className="transition-colors hover:text-white" href="/privacy">Privacidade</a>
         </nav>
 
         <div className="flex items-center gap-3">
@@ -583,6 +585,10 @@ function ContactSection() {
             Dados reais, atualizados em producao
           </div>
         </div>
+        <div className="mt-6 flex flex-wrap gap-4 border-t border-black/10 pt-4 text-sm font-medium text-black/55">
+          <a className="transition-colors hover:text-black" href="/terms">Termos de Servico</a>
+          <a className="transition-colors hover:text-black" href="/privacy">Politica de Privacidade</a>
+        </div>
       </div>
     </section>
   );
@@ -597,7 +603,192 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   );
 }
 
-export default function App() {
+function LegalTopBar() {
+  return (
+    <header className="sticky top-0 z-30 border-b border-white/10 bg-[#030305]/86 backdrop-blur-2xl">
+      <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
+        <a href="/" className="flex items-center gap-3">
+          <div className="grid h-11 w-11 place-items-center rounded-xl border border-red-400/45 bg-red-500/10 text-sm font-black text-white">
+            JF
+          </div>
+          <div>
+            <p className="text-sm font-semibold leading-tight text-white">JF Portfolio</p>
+            <p className="text-xs text-white/45">alcance real em redes sociais</p>
+          </div>
+        </a>
+        <nav className="flex items-center gap-4 text-sm text-white/58">
+          <a className="transition-colors hover:text-white" href="/terms">Termos</a>
+          <a className="transition-colors hover:text-white" href="/privacy">Privacidade</a>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+function LegalSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="mt-8">
+      <h2 className="text-xl font-bold text-white">{title}</h2>
+      <div className="mt-3 space-y-3 text-sm leading-7 text-white/62">{children}</div>
+    </section>
+  );
+}
+
+function TermsContent() {
+  return (
+    <>
+      <LegalSection title="1. Sobre o JF Portfolio">
+        <p>
+          O JF Portfolio e uma vitrine publica de alcance em redes sociais. O site apresenta metricas,
+          contas conectadas, atualizacoes e historico de visualizacoes de canais autorizados.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="2. Uso do site">
+        <p>
+          Voce pode acessar o site para visualizar informacoes publicas de portfolio, resultados e dados
+          agregados exibidos na pagina. Voce nao deve tentar acessar areas administrativas, interferir no
+          funcionamento do servico, copiar dados de forma automatizada sem autorizacao ou usar o site para
+          qualquer finalidade ilegal.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="3. Dados e integracoes">
+        <p>
+          Algumas informacoes exibidas podem vir de integracoes autorizadas com plataformas de terceiros,
+          incluindo servicos de redes sociais e video. O acesso a esses dados depende das permissoes
+          concedidas pelos titulares das contas e das regras das plataformas correspondentes.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="4. Disponibilidade e precisao">
+        <p>
+          As metricas podem mudar conforme novas atualizacoes sao registradas, conexoes sao renovadas ou
+          plataformas de terceiros processam dados. O JF Portfolio busca apresentar informacoes corretas,
+          mas nao garante disponibilidade ininterrupta nem ausencia total de atrasos ou inconsistencias.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="5. Propriedade intelectual">
+        <p>
+          A interface, organizacao visual, textos, identidade e apresentacao do JF Portfolio pertencem aos
+          seus respectivos titulares. Marcas, nomes de plataformas e conteudos de terceiros pertencem aos
+          seus proprietarios.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="6. Alteracoes destes termos">
+        <p>
+          Estes termos podem ser atualizados para refletir mudancas no site, nas integracoes ou em requisitos
+          legais. A versao publicada nesta pagina e a versao vigente.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="7. Contato">
+        <p>
+          Para duvidas sobre estes termos, acesse a pagina inicial em <a className="text-white underline" href="/">jfclipes.pro</a> e utilize o canal de contato disponivel.
+        </p>
+      </LegalSection>
+    </>
+  );
+}
+
+function PrivacyContent() {
+  return (
+    <>
+      <LegalSection title="1. Informacoes que coletamos">
+        <p>
+          O JF Portfolio pode processar dados necessarios para exibir metricas de contas autorizadas, como
+          nome do canal ou conta, identificador publico, plataforma, total de visualizacoes, horarios de
+          atualizacao e eventos de sincronizacao.
+        </p>
+        <p>
+          Tambem podemos processar informacoes tecnicas basicas do acesso ao site, como endereco IP,
+          navegador, dispositivo, registros de erro e dados de seguranca, quando esses dados forem gerados
+          pela infraestrutura de hospedagem ou pelo backend.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="2. Como usamos as informacoes">
+        <p>
+          Usamos as informacoes para exibir o portfolio publico, atualizar metricas, manter integracoes com
+          plataformas autorizadas, proteger o servico, diagnosticar problemas tecnicos e melhorar a
+          experiencia da pagina.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="3. Integracoes com terceiros">
+        <p>
+          O site pode usar APIs e autenticacao de plataformas de terceiros para contas autorizadas. Essas
+          plataformas podem ter suas proprias politicas de privacidade, termos e controles de permissao.
+          O titular da conta pode revogar permissoes diretamente na plataforma correspondente quando
+          disponivel.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="4. Compartilhamento">
+        <p>
+          Nao vendemos dados pessoais. Podemos compartilhar dados apenas quando necessario para operar a
+          hospedagem, banco de dados, autenticacao, integracoes autorizadas, seguranca do servico ou quando
+          exigido por lei.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="5. Retencao e exclusao">
+        <p>
+          Mantemos dados pelo tempo necessario para operar o portfolio, cumprir requisitos tecnicos,
+          preservar historico autorizado ou atender obrigacoes legais. Solicitacoes de remocao ou revisao de
+          dados podem ser feitas pelo canal de contato disponivel na pagina inicial.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="6. Seguranca">
+        <p>
+          Aplicamos medidas tecnicas razoaveis para proteger as informacoes processadas pelo site. Nenhum
+          metodo de transmissao ou armazenamento e totalmente infalivel, mas buscamos reduzir riscos de
+          acesso nao autorizado, perda ou uso indevido.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="7. Seus direitos">
+        <p>
+          Dependendo da sua localizacao, voce pode ter direitos de acesso, correcao, exclusao, portabilidade
+          ou oposicao ao tratamento de dados. Para exercer esses direitos, utilize o canal de contato na
+          pagina inicial.
+        </p>
+      </LegalSection>
+
+      <LegalSection title="8. Contato">
+        <p>
+          Para perguntas sobre privacidade, acesse <a className="text-white underline" href="/">jfclipes.pro</a> e utilize o canal de contato disponivel.
+        </p>
+      </LegalSection>
+    </>
+  );
+}
+
+function LegalPage({ type }: { type: "terms" | "privacy" }) {
+  const isTerms = type === "terms";
+
+  return (
+    <div className="min-h-screen overflow-x-hidden bg-[#030305] text-white">
+      <SignalBackdrop />
+      <LegalTopBar />
+      <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+        <article className="rounded-[2rem] bg-white/[0.055] p-6 shadow-2xl shadow-black/25 backdrop-blur-2xl sm:p-8">
+          <p className="text-sm uppercase text-white/42">JF Portfolio</p>
+          <h1 className="mt-3 text-4xl font-black text-white sm:text-5xl">
+            {isTerms ? "Termos de Servico" : "Politica de Privacidade"}
+          </h1>
+          <p className="mt-3 text-sm text-white/48">Ultima atualizacao: 23 de abril de 2026</p>
+          {isTerms ? <TermsContent /> : <PrivacyContent />}
+        </article>
+      </main>
+    </div>
+  );
+}
+
+function PortfolioApp() {
   const { data, isLoading, error } = useDashboard();
   const previousViewsTotalRef = useRef<number | null>(null);
   const previousUpdatedAtRef = useRef<string | null>(null);
@@ -686,4 +877,18 @@ export default function App() {
       ) : null}
     </div>
   );
+}
+
+export default function App() {
+  const pathname = typeof window === "undefined" ? "/" : window.location.pathname;
+
+  if (pathname === "/terms" || pathname === "/terms/") {
+    return <LegalPage type="terms" />;
+  }
+
+  if (pathname === "/privacy" || pathname === "/privacy/") {
+    return <LegalPage type="privacy" />;
+  }
+
+  return <PortfolioApp />;
 }
