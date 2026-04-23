@@ -58,6 +58,16 @@ CREATE TABLE IF NOT EXISTS platforms (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+INSERT INTO platforms (id, slug, name, color)
+VALUES
+  ('platform-instagram', 'instagram', 'Instagram', '#E1306C'),
+  ('platform-youtube', 'youtube', 'YouTube', '#FF0000'),
+  ('platform-tiktok', 'tiktok', 'TikTok', '#00f2ea')
+ON CONFLICT (slug) DO UPDATE SET
+  name = EXCLUDED.name,
+  color = EXCLUDED.color,
+  updated_at = NOW();
+
 CREATE TABLE IF NOT EXISTS accounts (
   id TEXT PRIMARY KEY,
   platform_id TEXT NOT NULL REFERENCES platforms(id) ON DELETE RESTRICT,

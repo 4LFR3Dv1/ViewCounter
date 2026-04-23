@@ -1,4 +1,5 @@
 import { getPostgresPool } from "../db/postgres.js";
+import type { PoolClient } from "pg";
 import type { ConnectionStatus, PlatformSlug } from "../types/dashboard.js";
 import type {
   DashboardStore,
@@ -215,6 +216,49 @@ function buildSyncEventText(platformSlug: SyncPlatform, displayName: string) {
   return platformSlug === "youtube"
     ? `${displayName} sincronizado automaticamente no YouTube`
     : `${displayName} sincronizado automaticamente no TikTok`;
+}
+
+function getPlatformSeed(platformSlug: PlatformSlug) {
+  const platforms: Record<PlatformSlug, PersistedPlatform> = {
+    instagram: {
+      id: "platform-instagram",
+      slug: "instagram",
+      name: "Instagram",
+      color: "#E1306C",
+    },
+    youtube: {
+      id: "platform-youtube",
+      slug: "youtube",
+      name: "YouTube",
+      color: "#FF0000",
+    },
+    tiktok: {
+      id: "platform-tiktok",
+      slug: "tiktok",
+      name: "TikTok",
+      color: "#00f2ea",
+    },
+  };
+
+  return platforms[platformSlug];
+}
+
+async function ensurePlatform(client: Pick<PoolClient, "query">, platformSlug: PlatformSlug) {
+  const platform = getPlatformSeed(platformSlug);
+  const result = await client.query<{ id: string }>(
+    `
+      INSERT INTO platforms (id, slug, name, color)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (slug) DO UPDATE SET
+        name = EXCLUDED.name,
+        color = EXCLUDED.color,
+        updated_at = NOW()
+      RETURNING id
+    `,
+    [platform.id, platform.slug, platform.name, platform.color],
+  );
+
+  return result.rows[0].id;
 }
 
 export async function loadDashboardStore(): Promise<DashboardStore> {
@@ -436,16 +480,7 @@ async function upsertPlatformConnection(params: {
   try {
     await client.query("BEGIN");
 
-    const platformResult = await client.query<{ id: string }>(
-      `SELECT id FROM platforms WHERE slug = $1 LIMIT 1`,
-      [params.platformSlug],
-    );
-
-    if (platformResult.rowCount === 0) {
-      throw new Error(`Platform ${params.platformSlug} nao encontrada em platforms`);
-    }
-
-    const platformId = platformResult.rows[0].id;
+    const platformId = await ensurePlatform(client, params.platformSlug);
     const platformPrefix = params.platformSlug === "youtube" ? "yt" : "tt";
     const accountId = `acc-${platformPrefix}-${params.providerAccountId}`;
     const now = new Date().toISOString();
@@ -755,63 +790,52 @@ export async function persistTikTokSyncResult(params: {
 
 export async function recordSyncJob(job: PersistedSyncJob) {
   const pool = getPostgresPool();
+  const client = await pool.connect();
 
-  await pool.query(
-    `
-      INSERT INTO sync_jobs (
-        id,
-        platform_id,
-        trigger_type,
-        scope_type,
-        connection_id,
-        account_id,
-        status,
-        total_connections,
-        success_count,
-        failed_count,
-        started_at,
-        finished_at,
-        message,
-        error_message,
-        details_json
-      )
-      SELECT
-        $1,
-        p.id,
-        $2,
-        $3,
-        $4,
-        $5,
-        $6,
-        $7,
-        $8,
-        $9,
-        $10,
-        $11,
-        $12,
-        $13,
-        $14::jsonb
-      FROM platforms p
-      WHERE p.slug = $15
-    `,
-    [
-      job.id,
-      job.trigger,
-      job.scope,
-      job.connectionId ?? null,
-      job.accountId ?? null,
-      job.status,
-      job.totalConnections,
-      job.successCount,
-      job.failedCount,
-      job.startedAt,
-      job.finishedAt,
-      job.message ?? null,
-      job.error ?? null,
-      JSON.stringify(job.details ?? {}),
-      job.platformSlug,
-    ],
-  );
+  try {
+    const platformId = await ensurePlatform(client, job.platformSlug);
+
+    await client.query(
+      `
+        INSERT INTO sync_jobs (
+          id,
+          platform_id,
+          trigger_type,
+          scope_type,
+          connection_id,
+          account_id,
+          status,
+          total_connections,
+          success_count,
+          failed_count,
+          started_at,
+          finished_at,
+          message,
+          error_message,
+          details_json
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15::jsonb)
+      `,
+      [
+        job.id,
+        platformId,
+        job.trigger,
+        job.scope,
+        job.connectionId ?? null,
+        job.accountId ?? null,
+        job.status,
+        job.totalConnections,
+        job.successCount,
+        job.failedCount,
+        job.startedAt,
+        job.finishedAt,
+        job.message ?? null,
+        job.error ?? null,
+        JSON.stringify(job.details ?? {}),
+      ],
+    );
+  } finally {
+    client.release();
+  }
 
   return job;
 }
