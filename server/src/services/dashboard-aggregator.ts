@@ -222,18 +222,57 @@ function buildWarnings(
     .map(({ latest: _latest, ...warning }) => warning);
 }
 
-function buildEvents(store: DashboardStore, platformBySlug: Map<PlatformSlug, PersistedPlatform>): ActivityEvent[] {
+function findEventAccount(event: { text: string; platformSlug: PlatformSlug }, store: DashboardStore) {
+  const normalizedText = event.text.toLowerCase();
+
+  return store.accounts.find((account) => {
+    if (account.platformSlug !== event.platformSlug) return false;
+    const displayName = account.displayName.toLowerCase();
+    const handle = account.handle.toLowerCase();
+    return normalizedText.includes(displayName) || normalizedText.includes(handle);
+  });
+}
+
+function getSnapshotForEvent(snapshots: PersistedMetricSnapshot[], eventCreatedAt: string) {
+  const eventTime = new Date(eventCreatedAt).getTime();
+  const ordered = snapshots
+    .filter((snapshot) => new Date(snapshot.capturedAt).getTime() <= eventTime + 1000)
+    .sort((left, right) => new Date(left.capturedAt).getTime() - new Date(right.capturedAt).getTime());
+
+  const current = ordered.at(-1) ?? null;
+  const previous = ordered.at(-2) ?? null;
+
+  return { current, previous };
+}
+
+function buildEvents(
+  store: DashboardStore,
+  platformBySlug: Map<PlatformSlug, PersistedPlatform>,
+  snapshotsByAccount: SnapshotMap,
+): ActivityEvent[] {
   return [...store.events]
     .sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime())
     .slice(0, 6)
-    .map((event) => ({
-      id: event.id,
-      platform: platformBySlug.get(event.platformSlug)?.name ?? event.platformSlug,
-      slug: event.platformSlug,
-      text: event.text,
-      color: platformBySlug.get(event.platformSlug)?.color ?? "#ffffff",
-      createdAt: event.createdAt,
-    }));
+    .map((event) => {
+      const account = findEventAccount(event, store);
+      const snapshots = account ? snapshotsByAccount.get(account.id) ?? [] : [];
+      const { current, previous } = getSnapshotForEvent(snapshots, event.createdAt);
+      const viewsDelta = current && previous ? Math.max(0, current.totalViews - previous.totalViews) : 0;
+
+      return {
+        id: event.id,
+        platform: platformBySlug.get(event.platformSlug)?.name ?? event.platformSlug,
+        slug: event.platformSlug,
+        text: event.text,
+        color: platformBySlug.get(event.platformSlug)?.color ?? "#ffffff",
+        createdAt: event.createdAt,
+        accountId: account?.id,
+        accountName: account?.displayName,
+        viewsTotal: current?.totalViews,
+        viewsDelta,
+        deltaPercentage: current ? calculateDelta(current.totalViews, previous?.totalViews ?? null) : undefined,
+      };
+    });
 }
 
 function buildCases(store: DashboardStore, platformBySlug: Map<PlatformSlug, PersistedPlatform>): CaseStudy[] {
@@ -309,7 +348,7 @@ export function aggregateDashboard(store: DashboardStore): DashboardPayload {
     chart,
     platforms: buildPlatformCards(store, snapshotsByAccount, chartDayKeys),
     accounts: buildAccountCards(store, snapshotsByAccount, platformBySlug),
-    events: buildEvents(store, platformBySlug),
+    events: buildEvents(store, platformBySlug, snapshotsByAccount),
     cases: buildCases(store, platformBySlug),
     warnings: buildWarnings(store, snapshotsByAccount, platformBySlug),
     health: buildHealth(store, snapshotsByAccount),

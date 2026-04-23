@@ -171,10 +171,7 @@ function TopBar({ data }: { data: DashboardPayload & { secondsSinceUpdate: numbe
       className="sticky top-0 z-30 border-b border-white/10 bg-[#030305]/82 backdrop-blur-2xl"
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-        <a href="#inicio" className="flex items-center gap-3">
-          <div className="grid h-12 w-12 place-items-center rounded-2xl border border-red-400/40 bg-[linear-gradient(135deg,rgba(239,68,68,0.22),rgba(255,255,255,0.055))] text-sm font-black text-white shadow-[0_0_34px_rgba(239,68,68,0.24)]">
-            JF
-          </div>
+        <a href="#inicio" className="flex items-center">
           <div>
             <p className="text-base font-bold leading-tight text-white">JF Portfolio</p>
             <p className="text-[11px] text-white/42">alcance real em redes sociais</p>
@@ -858,7 +855,7 @@ function EventsSection({ data }: { data: DashboardPayload & { secondsSinceUpdate
   const visibleEvents = data.events.slice(0, 5);
   const activeAccounts = new Set(
     visibleEvents
-      .map((event) => event.text.split(" atualizado")[0].split(" sincronizado")[0].trim())
+      .map((event) => event.accountName ?? event.text.split(" atualizado")[0].split(" sincronizado")[0].trim())
       .filter(Boolean),
   );
 
@@ -892,13 +889,29 @@ function EventsSection({ data }: { data: DashboardPayload & { secondsSinceUpdate
               <Activity className="h-5 w-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-white">{formatPublicEventText(event.text, event.platform)}</p>
-              <p className="mt-1 text-xs text-white/42">{event.platform} / {formatClock(event.createdAt)}</p>
+              <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_130px_110px_90px] lg:items-end">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-white">{formatPublicEventText(event.text, event.platform)}</p>
+                  <p className="mt-1 text-xs text-white/42">{event.platform} / {formatClock(event.createdAt)}</p>
+                </div>
+                <EventMetric label="views no update" value={typeof event.viewsTotal === "number" ? formatCompact(event.viewsTotal) : "--"} />
+                <EventMetric label="ganho" value={typeof event.viewsDelta === "number" ? `+${formatCompact(event.viewsDelta)}` : "--"} />
+                <EventMetric label="variacao" value={typeof event.deltaPercentage === "number" ? `${event.deltaPercentage}%` : "--"} />
+              </div>
             </div>
           </motion.div>
         ))}
       </div>
     </section>
+  );
+}
+
+function EventMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[10px] uppercase text-white/32">{label}</p>
+      <p className="mt-1 truncate text-sm font-semibold text-white/82">{value}</p>
+    </div>
   );
 }
 
@@ -1231,8 +1244,8 @@ function PortfolioApp() {
       <TopBar data={data} />
 
       <main>
-        <ReachSurface data={data} platforms={publicPlatforms} accounts={data.accounts} />
         <MarketTape data={data} viewsDelta={lastViewsDelta} />
+        <ReachSurface data={data} platforms={publicPlatforms} accounts={data.accounts} />
         {publicPlatforms.length > 0 ? <AllocationLines data={data} platforms={publicPlatforms} /> : null}
         {data.accounts.length > 0 ? <ChannelRows accounts={data.accounts} /> : null}
         <EventsSection data={data} />

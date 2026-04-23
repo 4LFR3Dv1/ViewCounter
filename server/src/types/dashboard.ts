@@ -72,6 +72,11 @@ export interface ActivityEvent {
   text: string;
   color: string;
   createdAt: string;
+  accountId?: string;
+  accountName?: string;
+  viewsTotal?: number;
+  viewsDelta?: number;
+  deltaPercentage?: number;
 }
 
 export interface DashboardWarning {
