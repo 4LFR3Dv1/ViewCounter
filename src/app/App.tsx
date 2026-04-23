@@ -40,6 +40,16 @@ function formatClock(dateLike: string) {
   }).format(date);
 }
 
+function formatElapsed(seconds: number) {
+  if (seconds < 60) return `${seconds}s`;
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min`;
+
+  const hours = Math.floor(minutes / 60);
+  return `${hours}h`;
+}
+
 function formatPercentage(value: number) {
   return `${Math.round(value)}%`;
 }
@@ -83,6 +93,27 @@ function formatPublicCoverageLabel(label: string, platform: string) {
     .replace(new RegExp(`sincronizadas pelo scheduler do ${platform}`, "i"), `atualizadas pelo ${platform}`)
     .replace(/sincronizadas pelo scheduler/i, "atualizadas")
     .replace(/sincronizadas/i, "atualizadas");
+}
+
+function MiniSparkline({ values, color = "#ef4444" }: { values: number[]; color?: string }) {
+  const source = values.length > 1 ? values : [values[0] ?? 0, values[0] ?? 0];
+  const max = Math.max(...source, 1);
+  const min = Math.min(...source);
+  const range = Math.max(max - min, 1);
+  const points = source
+    .map((value, index) => {
+      const x = (index / (source.length - 1)) * 100;
+      const y = 34 - ((value - min) / range) * 28;
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  return (
+    <svg className="h-12 w-full overflow-visible" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">
+      <polyline points={`0,40 ${points} 100,40`} fill={color} opacity="0.08" />
+      <polyline points={points} fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
 }
 
 function SignalBackdrop() {
@@ -141,12 +172,12 @@ function TopBar({ data }: { data: DashboardPayload & { secondsSinceUpdate: numbe
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <a href="#inicio" className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-xl border border-red-400/45 bg-red-500/10 text-sm font-black text-white shadow-[0_0_34px_rgba(239,68,68,0.24)]">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl border border-red-400/40 bg-[linear-gradient(135deg,rgba(239,68,68,0.22),rgba(255,255,255,0.055))] text-sm font-black text-white shadow-[0_0_34px_rgba(239,68,68,0.24)]">
             JF
           </div>
           <div>
-            <p className="text-sm font-semibold leading-tight text-white">JF Portfolio</p>
-            <p className="text-xs text-white/45">alcance real em redes sociais</p>
+            <p className="text-base font-bold leading-tight text-white">JF Portfolio</p>
+            <p className="text-[11px] text-white/42">alcance real em redes sociais</p>
           </div>
         </a>
 
@@ -160,9 +191,12 @@ function TopBar({ data }: { data: DashboardPayload & { secondsSinceUpdate: numbe
         </nav>
 
         <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-3 py-1.5 text-xs text-white/60 sm:flex">
-            <Radio className="h-3.5 w-3.5 text-red-300" />
-            <span>{data.secondsSinceUpdate}s</span>
+          <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.045] px-3 py-1.5 text-xs text-white/66 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] sm:flex">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-300 opacity-45" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-300" />
+            </span>
+            <span>atualizado ha {formatElapsed(data.secondsSinceUpdate)}</span>
           </div>
           <a
             href="#contato"
@@ -190,6 +224,11 @@ function Hero({
   const leadingAccounts = getPlatformAccounts(accounts, leadingPlatform);
   const platformShare = getShare(leadingPlatform?.views ?? data.summary.viewsTotal, data.summary.viewsTotal);
   const deltaLabel = data.summary.deltaPercentage > 0 ? `+${data.summary.deltaPercentage}%` : `${data.summary.deltaPercentage}%`;
+  const performanceLine =
+    data.summary.deltaPercentage !== 0
+      ? `${deltaLabel} em ${data.summary.activeWindowLabel}`
+      : `${data.summary.accountsCovered} contas ativas com ${formatPercentage(data.health.coverageRatio * 100)} de cobertura`;
+  const chartValues = data.chart.map((point) => point.total);
 
   return (
     <section id="inicio" className="relative mx-auto grid max-w-7xl gap-5 px-4 py-8 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-14">
@@ -198,8 +237,8 @@ function Hero({
         animate={{ opacity: 1, y: 0 }}
         className="relative overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,rgba(255,255,255,0.11),rgba(255,255,255,0.035)_42%,rgba(239,68,68,0.08))] p-px shadow-2xl shadow-black/30"
       >
-        <div className="relative min-h-[550px] overflow-hidden rounded-[2rem] bg-[#070709]/88 p-5 backdrop-blur-2xl sm:p-7">
-          <div className="absolute right-4 top-0 select-none text-[8rem] font-black leading-none text-white/[0.035] sm:text-[12rem] lg:text-[15rem]">
+        <div className="relative min-h-[550px] overflow-hidden rounded-[2rem] bg-[radial-gradient(circle_at_18%_88%,rgba(239,68,68,0.14),transparent_34%),linear-gradient(145deg,rgba(7,7,9,0.95),rgba(7,7,9,0.86))] p-5 backdrop-blur-2xl sm:p-7">
+          <div className="absolute right-4 top-0 select-none text-[8rem] font-black leading-none text-white/[0.028] sm:text-[12rem] lg:text-[15rem]">
             JF
           </div>
           <div className="absolute left-7 top-0 h-px w-2/3 bg-gradient-to-r from-red-400 via-white/25 to-transparent" />
@@ -213,12 +252,19 @@ function Hero({
               </div>
 
               <p className="mb-4 text-sm uppercase text-white/42">views totais registradas</p>
-              <h1 className="max-w-5xl text-5xl font-black leading-none text-white sm:text-7xl lg:text-8xl">
+              <h1 className="max-w-5xl text-5xl font-black leading-none text-white sm:text-6xl lg:text-7xl">
                 <LiveCounter value={data.summary.viewsTotal} duration={1.8} />
               </h1>
-              <p className="mt-5 max-w-2xl text-xl font-medium text-white/82 sm:text-2xl">
+              <p className="mt-4 max-w-2xl text-xl font-medium text-white/82 sm:text-2xl">
                 views registradas em contas conectadas.
               </p>
+              <div className="mt-5 max-w-xl rounded-2xl bg-white/[0.045] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                <div className="mb-3 flex items-center justify-between gap-3 text-sm">
+                  <span className="font-semibold text-white">{performanceLine}</span>
+                  <span className="shrink-0 text-white/42">{data.summary.activeWindowLabel}</span>
+                </div>
+                <MiniSparkline values={chartValues} color={leadingPlatform?.color ?? "#ef4444"} />
+              </div>
               <p className="mt-5 max-w-xl text-base leading-7 text-white/52">
                 Um portfolio comercial de canais e conteudos medido por dados reais. Cada atualizacao mostra o alcance ativo das contas conectadas.
               </p>
@@ -227,7 +273,7 @@ function Hero({
             <div className="mt-9 grid gap-3 sm:grid-cols-3">
               <SignalStat label="periodo analisado" value={data.summary.activeWindowLabel} />
               {data.summary.deltaPercentage !== 0 ? <SignalStat label="variacao" value={deltaLabel} /> : null}
-              <SignalStat label="atualizado ha" value={`${data.secondsSinceUpdate}s`} />
+              <SignalStat label="atualizado ha" value={formatElapsed(data.secondsSinceUpdate)} />
             </div>
           </div>
         </div>
@@ -257,6 +303,11 @@ function Hero({
               <p className="mt-3 text-5xl font-black leading-none text-white sm:text-6xl">
                 {leadingPlatform?.platform ?? "Ativo"}
               </p>
+              <p className="mt-3 text-sm leading-6 text-white/50">
+                {leadingPlatform
+                  ? `${formatPercentage(platformShare)} do alcance atual vem de ${leadingPlatform.accountsCovered}/${leadingPlatform.accountsTotal} contas conectadas.`
+                  : "O alcance aparece quando uma plataforma conectada envia dados."}
+              </p>
               <div className="mt-6">
                 <div className="mb-2 flex items-center justify-between text-xs text-white/42">
                   <span>peso no alcance total</span>
@@ -279,8 +330,8 @@ function Hero({
               <SignalStat label="contas ativas" value={`${leadingPlatform?.accountsCovered ?? data.summary.accountsCovered}/${leadingPlatform?.accountsTotal ?? data.summary.accountsTotal}`} />
               <SignalStat label="cobertura" value={formatPercentage(data.health.coverageRatio * 100)} />
             </div>
-            {leadingAccounts.slice(0, 2).map((account) => (
-              <AccountSignal key={account.id} account={account} total={data.summary.viewsTotal} />
+            {leadingAccounts.slice(0, 2).map((account, index) => (
+              <AccountSignal key={account.id} account={account} total={data.summary.viewsTotal} isPrimary={index === 0} />
             ))}
           </div>
         </div>
@@ -298,17 +349,17 @@ function SignalStat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function AccountSignal({ account, total }: { account: AccountCardData; total: number }) {
+function AccountSignal({ account, total, isPrimary = false }: { account: AccountCardData; total: number; isPrimary?: boolean }) {
   const share = getShare(account.views, total);
 
   return (
-    <div className="rounded-2xl bg-white/[0.045] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+    <div className={`rounded-2xl p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] ${isPrimary ? "bg-red-500/[0.11]" : "bg-white/[0.045]"}`}>
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-white">{account.displayName}</p>
           <p className="truncate text-xs text-white/42">{account.handle}</p>
         </div>
-        <p className="shrink-0 text-xs text-white/45">{formatPercentage(share)}</p>
+        <p className={`shrink-0 text-sm font-semibold ${isPrimary ? "text-red-100" : "text-white/55"}`}>{formatPercentage(share)}</p>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-white/8">
         <div className="h-full rounded-full" style={{ width: `${share}%`, backgroundColor: account.color }} />
@@ -318,18 +369,22 @@ function AccountSignal({ account, total }: { account: AccountCardData; total: nu
 }
 
 function ActivityStrip({ data, viewsDelta }: { data: DashboardPayload & { secondsSinceUpdate: number }; viewsDelta: number }) {
-  if (viewsDelta <= 0) return null;
+  const publicPlatforms = getPublicPlatforms(data.platforms);
+  const leadingPlatform = [...publicPlatforms].sort((a, b) => b.views - a.views)[0];
+  const leadingAccount = [...data.accounts].sort((a, b) => b.views - a.views)[0];
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-2 sm:px-6 lg:px-8">
-      <div className="grid gap-3 rounded-[1.5rem] bg-white/[0.055] p-3 shadow-2xl shadow-black/20 backdrop-blur-2xl md:grid-cols-[1.4fr_0.8fr_0.8fr]">
+      <div className="grid gap-3 rounded-[1.5rem] bg-white/[0.055] p-3 shadow-2xl shadow-black/20 backdrop-blur-2xl md:grid-cols-5">
         <LivePill
           icon={<Activity className="h-4 w-4" />}
-          label="views nesta atualizacao"
-          value={`+${formatFull(viewsDelta)} views`}
+          label={viewsDelta > 0 ? "views nesta atualizacao" : "alcance consolidado"}
+          value={viewsDelta > 0 ? `+${formatFull(viewsDelta)} views` : `${formatCompact(data.summary.viewsTotal)} views`}
           accent="#ef4444"
         />
-        <LivePill icon={<Clock3 className="h-4 w-4" />} label="atualizado ha" value={`${data.secondsSinceUpdate}s`} accent="#f87171" />
+        <LivePill label="canal dominante" value={leadingPlatform?.platform ?? "em atualizacao"} accent={leadingPlatform?.color ?? "#f87171"} />
+        <LivePill label="maior conta" value={leadingAccount?.displayName ?? "em atualizacao"} accent={leadingAccount?.color ?? "#ffffff"} />
+        <LivePill icon={<Clock3 className="h-4 w-4" />} label="atualizado ha" value={formatElapsed(data.secondsSinceUpdate)} accent="#f87171" />
         <LivePill label="cobertura" value={formatPercentage(data.health.coverageRatio * 100)} accent="#f87171" />
       </div>
     </section>
@@ -351,10 +406,21 @@ function LivePill({ icon, label, value, accent }: { icon?: React.ReactNode; labe
 }
 
 function DataSection({ data, platforms }: { data: DashboardPayload; platforms: PlatformCardData[] }) {
+  const leadingPlatform = [...platforms].sort((a, b) => b.views - a.views)[0];
+  const leadingShare = getShare(leadingPlatform?.views ?? 0, data.summary.viewsTotal);
+
   return (
     <section id="dados" className="mx-auto grid max-w-7xl gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[0.88fr_1.12fr] lg:px-8">
       <div className="rounded-[2rem] bg-white/[0.05] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl">
         <SectionTitle eyebrow="alcance por plataforma" title="Como as views estao distribuidas" />
+        {leadingPlatform ? (
+          <div className="mt-5 rounded-2xl bg-black/24 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+            <p className="text-sm text-white/48">Concentracao atual</p>
+            <p className="mt-2 text-2xl font-black text-white">
+              {leadingPlatform.platform} representa {formatPercentage(leadingShare)} do alcance atual
+            </p>
+          </div>
+        ) : null}
         <div className="mt-5 grid gap-3">
           {platforms.map((platform) => (
             <PlatformRow key={platform.id} platform={platform} total={data.summary.viewsTotal} />
@@ -414,6 +480,10 @@ function PlatformRow({ platform, total }: { platform: PlatformCardData; total: n
 
 function SnapshotCard({ data }: { data: DashboardPayload }) {
   const point = data.chart[0];
+  const hasMoreHistory = data.chart.length > 1;
+  const currentTotal = data.summary.viewsTotal;
+  const initialTotal = point?.total ?? currentTotal;
+  const absoluteGrowth = currentTotal - initialTotal;
 
   return (
     <div className="relative overflow-hidden rounded-[2rem] bg-white/[0.05] p-5 shadow-2xl shadow-black/25 backdrop-blur-2xl">
@@ -422,24 +492,35 @@ function SnapshotCard({ data }: { data: DashboardPayload }) {
         <div>
           <SectionTitle eyebrow={data.summary.activeWindowLabel} title="Primeiro snapshot registrado" />
           <p className="mt-4 max-w-md text-sm leading-6 text-white/48">
-            A evolucao aparece conforme novos snapshots forem registrados.
+            {hasMoreHistory
+              ? "A evolucao acompanha os novos pontos registrados na janela atual."
+              : "Historico iniciado recentemente. Novos pontos serao adicionados conforme as proximas atualizacoes forem registradas."}
           </p>
         </div>
 
         <div>
-          <div className="mb-5 grid grid-cols-[auto_1fr] items-center gap-4">
+          <div className="mb-5 grid grid-cols-[auto_1fr_auto] items-center gap-4">
             <div className="grid h-12 w-12 place-items-center rounded-2xl bg-red-500/12 text-red-200">
               <Clock3 className="h-5 w-5" />
             </div>
             <div className="h-px bg-gradient-to-r from-red-400/70 via-white/20 to-transparent" />
-          </div>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-sm text-white/45">{point?.label ?? data.summary.activeWindowLabel}</p>
-              <p className="mt-2 text-5xl font-black text-white">{formatCompact(point?.total ?? data.summary.viewsTotal)}</p>
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/[0.055] text-white/60">
+              <Activity className="h-5 w-5" />
             </div>
-            <div className="rounded-full bg-white/[0.055] px-4 py-2 text-sm text-white/60">
-              {data.summary.deltaPercentage > 0 ? `+${data.summary.deltaPercentage}%` : `${data.summary.deltaPercentage}%`}
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="rounded-2xl bg-black/24 p-4">
+              <p className="text-xs text-white/42">inicio</p>
+              <p className="text-sm text-white/45">{point?.label ?? data.summary.activeWindowLabel}</p>
+              <p className="mt-2 text-2xl font-black text-white">{formatCompact(initialTotal)}</p>
+            </div>
+            <div className="rounded-2xl bg-black/24 p-4">
+              <p className="text-xs text-white/42">atual</p>
+              <p className="mt-6 text-2xl font-black text-white">{formatCompact(currentTotal)}</p>
+            </div>
+            <div className="rounded-2xl bg-black/24 p-4">
+              <p className="text-xs text-white/42">crescimento</p>
+              <p className="mt-6 text-2xl font-black text-white">{absoluteGrowth > 0 ? `+${formatCompact(absoluteGrowth)}` : "em formacao"}</p>
             </div>
           </div>
         </div>
@@ -449,25 +530,34 @@ function SnapshotCard({ data }: { data: DashboardPayload }) {
 }
 
 function AccountsSection({ accounts }: { accounts: AccountCardData[] }) {
+  const totalViews = accounts.reduce((sum, account) => sum + account.views, 0);
+
   return (
     <section id="contas" className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
       <SectionTitle eyebrow="canais em destaque" title={`${accounts.length} contas com dados ativos`} />
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         {accounts.map((account, index) => (
-          <AccountCard key={account.id} account={account} index={index} />
+          <AccountCard key={account.id} account={account} index={index} totalViews={totalViews} />
         ))}
       </div>
     </section>
   );
 }
 
-function AccountCard({ account, index }: { account: AccountCardData; index: number }) {
+function AccountCard({ account, index, totalViews }: { account: AccountCardData; index: number; totalViews: number }) {
+  const share = getShare(account.views, totalViews);
+  const isPrimary = index === 0;
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.08 + index * 0.05 }}
-      className="group relative overflow-hidden rounded-[2rem] bg-[linear-gradient(140deg,rgba(255,255,255,0.08),rgba(255,255,255,0.035)_54%,rgba(239,68,68,0.08))] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl"
+      className={`group relative overflow-hidden rounded-[2rem] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl ${
+        isPrimary
+          ? "bg-[linear-gradient(140deg,rgba(239,68,68,0.15),rgba(255,255,255,0.06)_48%,rgba(255,255,255,0.035))]"
+          : "bg-[linear-gradient(140deg,rgba(255,255,255,0.08),rgba(255,255,255,0.035)_54%,rgba(239,68,68,0.08))]"
+      }`}
     >
       <div className="absolute inset-x-0 top-0 h-px opacity-80" style={{ backgroundColor: account.color }} />
       <div className="absolute right-4 top-4 text-6xl font-black leading-none text-white/[0.045]">{String(index + 1).padStart(2, "0")}</div>
@@ -478,7 +568,7 @@ function AccountCard({ account, index }: { account: AccountCardData; index: numb
             <p className="mt-1 truncate text-sm text-white/45">{account.handle}</p>
           </div>
           <div className="rounded-full bg-white/[0.06] px-3 py-1.5 text-xs text-white/55">
-            {account.platform}
+            {isPrimary ? "maior alcance" : account.platform}
           </div>
         </div>
 
@@ -490,6 +580,21 @@ function AccountCard({ account, index }: { account: AccountCardData; index: numb
           <p className="mt-4 max-w-md text-sm leading-6 text-white/48">
             {formatPublicCoverageLabel(account.coverageLabel, account.platform)}
           </p>
+          <div className="mt-5">
+            <div className="mb-2 flex items-center justify-between text-xs text-white/42">
+              <span>participacao entre contas</span>
+              <span>{formatPercentage(share)}</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-white/8">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${share}%` }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                className="h-full rounded-full"
+                style={{ backgroundColor: account.color }}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </motion.article>
@@ -498,25 +603,37 @@ function AccountCard({ account, index }: { account: AccountCardData; index: numb
 
 function EventsSection({ data }: { data: DashboardPayload & { secondsSinceUpdate: number } }) {
   if (data.events.length === 0) return null;
+  const visibleEvents = data.events.slice(0, 5);
+  const activeAccounts = new Set(
+    visibleEvents
+      .map((event) => event.text.split(" atualizado")[0].split(" sincronizado")[0].trim())
+      .filter(Boolean),
+  );
 
   return (
     <section id="atividade" className="mx-auto grid max-w-7xl gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[0.65fr_1.35fr] lg:px-8">
       <div className="rounded-[2rem] bg-white/[0.045] p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl">
         <SectionTitle eyebrow="atualizacoes" title="Movimento recente" />
-        <div className="mt-8 flex items-center gap-3 text-sm text-white/48">
-          <Clock3 className="h-4 w-4 text-red-300" />
-          <span>atualizado ha {data.secondsSinceUpdate}s</span>
+        <div className="mt-8 grid gap-3 text-sm text-white/58">
+          <div className="flex items-center gap-3">
+            <Clock3 className="h-4 w-4 text-red-300" />
+            <span>atualizado ha {formatElapsed(data.secondsSinceUpdate)}</span>
+          </div>
+          <SignalStat label="eventos exibidos" value={String(visibleEvents.length)} />
+          <SignalStat label="contas com atividade" value={String(activeAccounts.size)} />
         </div>
       </div>
 
       <div className="relative grid gap-3 border-l border-red-400/35 pl-4">
-        {data.events.slice(0, 5).map((event, index) => (
+        {visibleEvents.map((event, index) => (
           <motion.div
             key={event.id}
             initial={{ opacity: 0, x: 14 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.08 + index * 0.04 }}
-            className="relative flex items-center gap-4 rounded-2xl bg-[#070709]/82 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl"
+            className={`relative flex items-center gap-4 rounded-2xl p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-2xl ${
+              index === 0 ? "bg-red-500/[0.11]" : "bg-[#070709]/82"
+            }`}
           >
             <span className="absolute -left-[23px] h-3 w-3 rounded-full border border-red-300 bg-[#030305]" />
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-white/[0.055]" style={{ color: event.color }}>
@@ -575,19 +692,29 @@ function Metric({ label, value }: { label: string; value: string }) {
 function ContactSection() {
   return (
     <section id="contato" className="mx-auto max-w-7xl px-4 py-4 pb-10 sm:px-6 lg:px-8">
-      <div className="rounded-[2rem] bg-white p-6 text-[#030305] shadow-2xl shadow-black/25">
+      <div className="relative overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,rgba(239,68,68,0.18),rgba(255,255,255,0.07)_42%,rgba(255,255,255,0.035))] p-px shadow-2xl shadow-black/25">
+        <div className="absolute right-6 top-0 select-none text-8xl font-black leading-none text-white/[0.035]">JF</div>
+        <div className="relative rounded-[2rem] bg-[#070709]/92 p-6 backdrop-blur-2xl">
         <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase text-black/45">contato</p>
-            <h2 className="mt-2 text-3xl font-black">Quer ver esse alcance aplicado ao seu projeto?</h2>
+            <p className="text-sm font-semibold uppercase text-white/42">contato</p>
+            <h2 className="mt-2 max-w-2xl text-3xl font-black text-white">Quer transformar alcance em presenca comercial?</h2>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-white/52">
+              Dados reais, canais conectados e acompanhamento continuo para mostrar o que esta acontecendo nas redes.
+            </p>
           </div>
-          <div className="rounded-xl border border-black/10 px-5 py-3 text-sm font-semibold text-black/62">
-            Dados reais, atualizados em producao
-          </div>
+          <a
+            href="#inicio"
+            className="inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-[#030305] transition-transform hover:scale-[1.02]"
+          >
+            Fale comigo
+          </a>
         </div>
-        <div className="mt-6 flex flex-wrap gap-4 border-t border-black/10 pt-4 text-sm font-medium text-black/55">
-          <a className="transition-colors hover:text-black" href="/terms">Termos de Servico</a>
-          <a className="transition-colors hover:text-black" href="/privacy">Politica de Privacidade</a>
+        <div className="mt-6 flex flex-wrap gap-4 border-t border-white/10 pt-4 text-sm font-medium text-white/45">
+          <a className="transition-colors hover:text-white" href="/terms">Termos de Servico</a>
+          <a className="transition-colors hover:text-white" href="/privacy">Politica de Privacidade</a>
+          <span>Dados reais, atualizados em producao</span>
+        </div>
         </div>
       </div>
     </section>
