@@ -1,27 +1,55 @@
-CREATE TYPE platform_slug AS ENUM ('instagram', 'youtube', 'tiktok');
+DO $$
+BEGIN
+  CREATE TYPE platform_slug AS ENUM ('instagram', 'youtube', 'tiktok');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE connection_status AS ENUM (
-  'connected',
-  'syncing',
-  'warning',
-  'disconnected',
-  'expired',
-  'pending_auth',
-  'pending_approval',
-  'manual_mode'
-);
+DO $$
+BEGIN
+  CREATE TYPE connection_status AS ENUM (
+    'connected',
+    'syncing',
+    'warning',
+    'disconnected',
+    'expired',
+    'pending_auth',
+    'pending_approval',
+    'manual_mode'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE snapshot_source AS ENUM ('api', 'manual');
+DO $$
+BEGIN
+  CREATE TYPE snapshot_source AS ENUM ('api', 'manual');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE case_status AS ENUM ('live', 'stable', 'archived');
+DO $$
+BEGIN
+  CREATE TYPE case_status AS ENUM ('live', 'stable', 'archived');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE sync_trigger_type AS ENUM ('manual', 'scheduler');
+DO $$
+BEGIN
+  CREATE TYPE sync_trigger_type AS ENUM ('manual', 'scheduler');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE sync_scope_type AS ENUM ('all', 'connection');
+DO $$
+BEGIN
+  CREATE TYPE sync_scope_type AS ENUM ('all', 'connection');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TYPE sync_job_status AS ENUM ('success', 'partial', 'failed');
+DO $$
+BEGIN
+  CREATE TYPE sync_job_status AS ENUM ('success', 'partial', 'failed');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
-CREATE TABLE platforms (
+CREATE TABLE IF NOT EXISTS platforms (
   id TEXT PRIMARY KEY,
   slug platform_slug NOT NULL UNIQUE,
   name TEXT NOT NULL,
@@ -30,7 +58,7 @@ CREATE TABLE platforms (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE accounts (
+CREATE TABLE IF NOT EXISTS accounts (
   id TEXT PRIMARY KEY,
   platform_id TEXT NOT NULL REFERENCES platforms(id) ON DELETE RESTRICT,
   display_name TEXT NOT NULL,
@@ -45,7 +73,7 @@ CREATE TABLE accounts (
   UNIQUE (platform_id, handle)
 );
 
-CREATE TABLE account_connections (
+CREATE TABLE IF NOT EXISTS account_connections (
   id TEXT PRIMARY KEY,
   account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   platform_id TEXT NOT NULL REFERENCES platforms(id) ON DELETE RESTRICT,
@@ -61,7 +89,7 @@ CREATE TABLE account_connections (
   UNIQUE (account_id, platform_id)
 );
 
-CREATE TABLE metric_snapshots (
+CREATE TABLE IF NOT EXISTS metric_snapshots (
   id TEXT PRIMARY KEY,
   account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
   captured_at TIMESTAMPTZ NOT NULL,
@@ -70,14 +98,14 @@ CREATE TABLE metric_snapshots (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE activity_events (
+CREATE TABLE IF NOT EXISTS activity_events (
   id TEXT PRIMARY KEY,
   platform_id TEXT NOT NULL REFERENCES platforms(id) ON DELETE RESTRICT,
   text TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL
 );
 
-CREATE TABLE case_studies (
+CREATE TABLE IF NOT EXISTS case_studies (
   id TEXT PRIMARY KEY,
   platform_id TEXT NOT NULL REFERENCES platforms(id) ON DELETE RESTRICT,
   title TEXT NOT NULL,
@@ -92,7 +120,7 @@ CREATE TABLE case_studies (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE sync_jobs (
+CREATE TABLE IF NOT EXISTS sync_jobs (
   id TEXT PRIMARY KEY,
   platform_id TEXT NOT NULL REFERENCES platforms(id) ON DELETE RESTRICT,
   connection_id TEXT REFERENCES account_connections(id) ON DELETE SET NULL,
@@ -111,30 +139,30 @@ CREATE TABLE sync_jobs (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_accounts_platform_id ON accounts(platform_id);
-CREATE INDEX idx_accounts_status ON accounts(status);
-CREATE INDEX idx_accounts_active_featured ON accounts(is_active, featured);
+CREATE INDEX IF NOT EXISTS idx_accounts_platform_id ON accounts(platform_id);
+CREATE INDEX IF NOT EXISTS idx_accounts_status ON accounts(status);
+CREATE INDEX IF NOT EXISTS idx_accounts_active_featured ON accounts(is_active, featured);
 
-CREATE INDEX idx_account_connections_account_id ON account_connections(account_id);
-CREATE INDEX idx_account_connections_platform_id ON account_connections(platform_id);
+CREATE INDEX IF NOT EXISTS idx_account_connections_account_id ON account_connections(account_id);
+CREATE INDEX IF NOT EXISTS idx_account_connections_platform_id ON account_connections(platform_id);
 
-CREATE INDEX idx_metric_snapshots_account_id ON metric_snapshots(account_id);
-CREATE INDEX idx_metric_snapshots_account_captured_at ON metric_snapshots(account_id, captured_at DESC);
-CREATE INDEX idx_metric_snapshots_captured_at ON metric_snapshots(captured_at DESC);
+CREATE INDEX IF NOT EXISTS idx_metric_snapshots_account_id ON metric_snapshots(account_id);
+CREATE INDEX IF NOT EXISTS idx_metric_snapshots_account_captured_at ON metric_snapshots(account_id, captured_at DESC);
+CREATE INDEX IF NOT EXISTS idx_metric_snapshots_captured_at ON metric_snapshots(captured_at DESC);
 
-CREATE INDEX idx_activity_events_platform_id ON activity_events(platform_id);
-CREATE INDEX idx_activity_events_created_at ON activity_events(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_activity_events_platform_id ON activity_events(platform_id);
+CREATE INDEX IF NOT EXISTS idx_activity_events_created_at ON activity_events(created_at DESC);
 
-CREATE INDEX idx_case_studies_platform_id ON case_studies(platform_id);
-CREATE INDEX idx_case_studies_status ON case_studies(status);
+CREATE INDEX IF NOT EXISTS idx_case_studies_platform_id ON case_studies(platform_id);
+CREATE INDEX IF NOT EXISTS idx_case_studies_status ON case_studies(status);
 
-CREATE INDEX idx_sync_jobs_platform_id ON sync_jobs(platform_id);
-CREATE INDEX idx_sync_jobs_connection_id ON sync_jobs(connection_id);
-CREATE INDEX idx_sync_jobs_account_id ON sync_jobs(account_id);
-CREATE INDEX idx_sync_jobs_status ON sync_jobs(status);
-CREATE INDEX idx_sync_jobs_started_at ON sync_jobs(started_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sync_jobs_platform_id ON sync_jobs(platform_id);
+CREATE INDEX IF NOT EXISTS idx_sync_jobs_connection_id ON sync_jobs(connection_id);
+CREATE INDEX IF NOT EXISTS idx_sync_jobs_account_id ON sync_jobs(account_id);
+CREATE INDEX IF NOT EXISTS idx_sync_jobs_status ON sync_jobs(status);
+CREATE INDEX IF NOT EXISTS idx_sync_jobs_started_at ON sync_jobs(started_at DESC);
 
-CREATE VIEW v_latest_account_snapshots AS
+CREATE OR REPLACE VIEW v_latest_account_snapshots AS
 SELECT DISTINCT ON (ms.account_id)
   ms.account_id,
   ms.id AS snapshot_id,
@@ -144,7 +172,7 @@ SELECT DISTINCT ON (ms.account_id)
 FROM metric_snapshots ms
 ORDER BY ms.account_id, ms.captured_at DESC, ms.id DESC;
 
-CREATE VIEW v_account_snapshot_deltas AS
+CREATE OR REPLACE VIEW v_account_snapshot_deltas AS
 WITH ranked AS (
   SELECT
     ms.account_id,
