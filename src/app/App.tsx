@@ -154,14 +154,12 @@ function SignalBackdrop() {
 
 function BrandMark({ className = "h-11 w-11" }: { className?: string }) {
   return (
-    <span className={`overflow-hidden rounded-xl border border-white/12 bg-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.28)] ${className}`}>
-      <img
-        src="/favicon/favicon-96x96.png"
-        alt="JF Portfolio"
-        className="h-full w-full object-cover"
-        loading="eager"
-      />
-    </span>
+    <img
+      src="/favicon/header-logo.png"
+      alt="JF Portfolio"
+      className={`${className} object-contain drop-shadow-[0_10px_30px_rgba(0,0,0,0.28)]`}
+      loading="eager"
+    />
   );
 }
 
@@ -202,12 +200,8 @@ function TopBar({ data }: { data: DashboardPayload & { secondsSinceUpdate: numbe
       className="sticky top-0 z-30 border-b border-white/12 bg-[#030305]/88 backdrop-blur-2xl"
     >
       <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-stretch px-4 sm:px-6 lg:grid-cols-[260px_minmax(0,1fr)_auto] lg:px-8">
-        <a href="#inicio" className="flex min-h-16 items-center gap-3 border-r border-white/10 pr-5">
-          <BrandMark className="h-10 w-10 shrink-0 rounded-2xl" />
-          <div>
-            <p className="text-lg font-black leading-none text-white">JF Portfolio</p>
-            <p className="mt-1 text-[10px] uppercase text-white/38">social reach board</p>
-          </div>
+        <a href="#inicio" aria-label="JF Portfolio" className="flex min-h-16 items-center border-r border-white/10 pr-5">
+          <BrandMark className="h-10 w-10 shrink-0" />
         </a>
 
         <nav className="hidden min-h-16 items-center lg:grid lg:grid-cols-6">
