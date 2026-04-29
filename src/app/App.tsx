@@ -152,6 +152,19 @@ function SignalBackdrop() {
   );
 }
 
+function BrandMark({ className = "h-11 w-11" }: { className?: string }) {
+  return (
+    <span className={`overflow-hidden rounded-xl border border-white/12 bg-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.28)] ${className}`}>
+      <img
+        src="/favicon/favicon-96x96.png"
+        alt="JF Portfolio"
+        className="h-full w-full object-cover"
+        loading="eager"
+      />
+    </span>
+  );
+}
+
 function FrameOverlay({ data }: { data: DashboardPayload & { secondsSinceUpdate: number } }) {
   return (
     <div className="pointer-events-none fixed inset-3 z-40 hidden lg:block">
@@ -189,7 +202,8 @@ function TopBar({ data }: { data: DashboardPayload & { secondsSinceUpdate: numbe
       className="sticky top-0 z-30 border-b border-white/12 bg-[#030305]/88 backdrop-blur-2xl"
     >
       <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-stretch px-4 sm:px-6 lg:grid-cols-[260px_minmax(0,1fr)_auto] lg:px-8">
-        <a href="#inicio" className="flex min-h-16 items-center border-r border-white/10 pr-5">
+        <a href="#inicio" className="flex min-h-16 items-center gap-3 border-r border-white/10 pr-5">
+          <BrandMark className="h-10 w-10 shrink-0 rounded-2xl" />
           <div>
             <p className="text-lg font-black leading-none text-white">JF Portfolio</p>
             <p className="mt-1 text-[10px] uppercase text-white/38">social reach board</p>
@@ -1143,9 +1157,7 @@ function LegalTopBar() {
     <header className="sticky top-0 z-30 border-b border-white/10 bg-[#030305]/86 backdrop-blur-2xl">
       <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
         <a href="/" className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-xl border border-red-400/45 bg-red-500/10 text-sm font-black text-white">
-            JF
-          </div>
+          <BrandMark />
           <div>
             <p className="text-sm font-semibold leading-tight text-white">JF Portfolio</p>
             <p className="text-xs text-white/45">alcance real em redes sociais</p>
