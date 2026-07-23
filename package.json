@@ -14,6 +14,7 @@
     "build": "npm run build:client",
     "build:client": "tsc -b && vite build",
     "build:server": "tsc -p tsconfig.server.json",
+    "verify": "npm run build:client && npm run build:server",
     "preview": "vite preview",
     "start:server": "node build/server/app.js"
   },
